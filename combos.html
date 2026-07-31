@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combo Trainer — Avatar Legends: The Fighting Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0a0f; --bg-dark: #12121a; --bg-card: #1a1a24; --bg-elevated: #22222e;
+  --border: #2e2e3a; --border-light: #3a3a48;
+  --text-primary: #e8e6e3; --text-secondary: #a0a0a8; --text-muted: #6a6a74;
+  --gold: #d4a843; --gold-bright: #f0c548;
+  --air: #7fc4e8; --water: #4a90d9; --earth: #c4a04e; --fire: #e85d3a; --spirit: #9b6dd4;
+  --green: #4ade80; --red: #ef4444;
+  --font-display: 'Cinzel', serif; --font-body: 'Rajdhani', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-primary); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem; }
+.nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--font-display); font-weight: 700; color: var(--gold); text-decoration: none; font-size: 1rem; letter-spacing: 0.1em; }
+.nav-links { display: flex; gap: 1.5rem; list-style: none; }
+.nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; transition: 0.3s; }
+.nav-link:hover, .nav-link.active { color: var(--gold-bright); }
+
+/* LAYOUT */
+.container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+
+/* PAGE HEADER */
+.page-header { text-align: center; margin-bottom: 3rem; }
+.page-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3em; color: var(--gold); margin-bottom: 0.5rem; }
+.page-title { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; background: linear-gradient(180deg, #fff, var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+.page-desc { color: var(--text-secondary); max-width: 600px; margin: 0 auto; font-size: 1rem; }
+
+/* COMBO SELECTOR */
+.combo-selector { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+.combo-pill { background: var(--bg-card); border: 1px solid var(--border); border-radius: 99px; padding: 0.5rem 1rem; font-size: 0.8rem; cursor: pointer; transition: 0.2s; color: var(--text-secondary); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
+.combo-pill:hover { border-color: var(--border-light); color: var(--text-primary); }
+.combo-pill.active { background: var(--gold); color: var(--bg-deep); border-color: var(--gold); }
+.combo-pill.completed::after { content: '✓'; color: var(--green); font-weight: 900; }
+.combo-pill[data-element="air"].active { background: var(--air); }
+.combo-pill[data-element="water"].active { background: var(--water); }
+.combo-pill[data-element="fire"].active { background: var(--fire); }
+.combo-pill[data-element="earth"].active { background: var(--earth); }
+.combo-pill[data-element="spirit"].active { background: var(--spirit); }
+
+/* TRAINER ARENA */
+.trainer { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+
+/* TRAINER HEADER */
+.trainer-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.trainer-combo-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+.trainer-combo-char { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.trainer-meta { display: flex; gap: 1.5rem; align-items: center; }
+.trainer-stat { text-align: center; }
+.trainer-stat-val { font-family: var(--font-mono); font-size: 1.2rem; font-weight: 700; color: var(--gold-bright); }
+.trainer-stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+
+/* TRAINER DISPLAY */
+.trainer-display { padding: 2rem; min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+
+/* COMBO SEQUENCE DISPLAY */
+.combo-sequence { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; perspective: 800px; }
+.input-node { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; transition: all 0.3s; }
+.input-key { width: 56px; height: 56px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; border: 2px solid var(--border-light); background: var(--bg-elevated); color: var(--text-secondary); position: relative; transition: all 0.2s; }
+.input-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: center; max-width: 70px; }
+
+/* Input states */
+.input-node.pending .input-key { border-color: var(--border-light); background: var(--bg-elevated); }
+.input-node.current .input-key { border-color: var(--gold-bright); background: rgba(240,197,72,0.1); color: var(--gold-bright); box-shadow: 0 0 20px rgba(240,197,72,0.3); animation: pulse 1s infinite; }
+.input-node.hit .input-key { border-color: var(--green); background: rgba(74,222,128,0.1); color: var(--green); }
+.input-node.miss .input-key { border-color: var(--red); background: rgba(239,68,68,0.1); color: var(--red); animation: shake 0.3s; }
+.input-node.perfect .input-key { border-color: var(--gold-bright); background: rgba(240,197,72,0.2); color: var(--gold-bright); box-shadow: 0 0 15px rgba(240,197,72,0.4); }
+
+/* Key type colors */
+.input-key[data-type="light"] { border-bottom: 3px solid var(--air); }
+.input-key[data-type="medium"] { border-bottom: 3px solid var(--water); }
+.input-key[data-type="heavy"] { border-bottom: 3px solid var(--fire); }
+.input-key[data-type="flow"] { border-bottom: 3px solid var(--spirit); }
+.input-key[data-type="special"] { border-bottom: 3px solid var(--gold); }
+.input-key[data-type="super"] { border-bottom: 3px solid var(--gold-bright); background: rgba(240,197,72,0.05); }
+
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* TIMING BAR */
+.timing-container { width: 100%; max-width: 500px; margin-top: 1rem; }
+.timing-bar { height: 8px; background: var(--bg-elevated); border-radius: 4px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+.timing-window { position: absolute; top: 0; bottom: 0; background: rgba(74,222,128,0.2); border-left: 2px solid var(--green); border-right: 2px solid var(--green); transition: left 0.05s linear; }
+.timing-perfect { position: absolute; top: 0; bottom: 0; background: rgba(240,197,72,0.3); transition: left 0.05s linear; }
+.timing-indicator { position: absolute; top: -4px; bottom: -4px; width: 4px; background: var(--gold-bright); border-radius: 2px; box-shadow: 0 0 8px var(--gold-bright); transition: left 0.05s linear; }
+.timing-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* FEEDBACK MESSAGE */
+.feedback { min-height: 40px; text-align: center; font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; opacity: 0; transition: opacity 0.2s; }
+.feedback.show { opacity: 1; animation: feedbackPop 0.4s; }
+.feedback.perfect { color: var(--gold-bright); text-shadow: 0 0 20px rgba(240,197,72,0.5); }
+.feedback.good { color: var(--green); }
+.feedback.miss { color: var(--red); }
+.feedback.complete { color: var(--gold-bright); font-size: 2rem; }
+@keyframes feedbackPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+
+/* CONTROLS */
+.trainer-controls { padding: 1.5rem 2rem; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+.btn { font-family: var(--font-body); font-weight: 600; font-size: 0.85rem; padding: 0.6rem 1.5rem; border-radius: 6px; border: 1px solid var(--border-light); background: var(--bg-elevated); color: var(--text-primary); cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+.btn:hover { border-color: var(--gold); color: var(--gold-bright); }
+.btn-primary { background: var(--gold); color: var(--bg-deep); border-color: var(--gold); }
+.btn-primary:hover { background: var(--gold-bright); border-color: var(--gold-bright); color: var(--bg-deep); }
+
+/* KEY GUIDE */
+.key-guide { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+.key-guide-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); }
+.key-cap { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; border-radius: 5px; background: var(--bg-elevated); border: 1px solid var(--border-light); font-family: var(--font-mono); font-weight: 600; font-size: 0.75rem; color: var(--text-primary); padding: 0 6px; }
+
+/* COMBO INFO */
+.combo-info { padding: 1.5rem 2rem; background: var(--bg-dark); border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+.combo-info strong { color: var(--gold-bright); }
+.combo-notation { font-family: var(--font-mono); background: var(--bg-deep); padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid var(--border); color: var(--gold-bright); font-size: 0.8rem; margin: 0.5rem 0; display: block; }
+
+/* PROGRESS DOTS */
+.progress-row { display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 1.5rem; }
+.progress-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: 0.3s; }
+.progress-dot.completed { background: var(--green); }
+.progress-dot.current { background: var(--gold-bright); box-shadow: 0 0 8px var(--gold-bright); }
+
+/* RESULTS */
+.results-overlay { position: fixed; inset: 0; background: rgba(5,5,10,0.95); backdrop-filter: blur(10px); z-index: 300; display: none; align-items: center; justify-content: center; padding: 2rem; }
+.results-overlay.active { display: flex; }
+.results-card { background: var(--bg-card); border: 1px solid var(--gold); border-radius: 12px; padding: 3rem; text-align: center; max-width: 500px; box-shadow: 0 0 60px rgba(212,168,67,0.15); }
+.results-title { font-family: var(--font-display); font-size: 2rem; font-weight: 900; color: var(--gold-bright); margin-bottom: 1rem; }
+.results-grade { font-family: var(--font-display); font-size: 4rem; font-weight: 900; margin-bottom: 0.5rem; }
+.results-grade.S { color: var(--gold-bright); text-shadow: 0 0 30px rgba(240,197,72,0.5); }
+.results-grade.A { color: var(--green); }
+.results-grade.B { color: var(--air); }
+.results-grade.C { color: var(--text-secondary); }
+.results-stats { display: flex; gap: 2rem; justify-content: center; margin: 1.5rem 0; }
+.results-stat-val { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--gold-bright); }
+.results-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* COMBO LIST SECTION */
+.combo-reference { margin-top: 3rem; }
+.combo-ref-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--gold); }
+.combo-ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--bg-card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.combo-ref-table th { padding: 0.75rem; background: var(--bg-elevated); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; text-align: left; }
+.combo-ref-table td { padding: 0.7rem 0.75rem; border-bottom: 1px solid rgba(46,46,58,0.5); }
+.combo-ref-table tr:hover td { background: rgba(255,255,255,0.02); }
+.combo-ref-table .notation { font-family: var(--font-mono); color: var(--gold-bright); font-size: 0.8rem; }
+.diff-badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
+.diff-badge.easy { background: rgba(74,222,128,0.15); color: var(--green); }
+.diff-badge.medium { background: rgba(240,197,72,0.15); color: var(--gold); }
+.diff-badge.hard { background: rgba(239,68,68,0.15); color: var(--red); }
+.diff-badge.expert { background: rgba(155,109,212,0.15); color: var(--spirit); }
+
+/* FOOTER */
+.footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+.footer a { color: var(--gold); text-decoration: none; }
+
+@media (max-width: 768px) {
+  .container { padding: 2rem 1rem; }
+  .input-key { width: 44px; height: 44px; font-size: 0.95rem; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html">⚡ AVATAR LEGENDS</a>
+    <ul class="nav-links">
+      <li><a class="nav-link" href="index.html">Guide</a></li>
+      <li><a class="nav-link" href="roster.html">Roster</a></li>
+      <li><a class="nav-link active" href="combos.html">Combo Trainer</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-eyebrow">Interactive Trainer</div>
+    <h1 class="page-title">Combo Dojo</h1>
+    <p class="page-desc">
+      Learn the bread-and-butter combos from Avatar Legends: The Fighting Game.
+      Hit the right keys at the right time to chain inputs. Progress from basic strings
+      to advanced routes.
+    </p>
+  </div>
+
+  <!-- KEY GUIDE -->
+  <div class="key-guide" style="margin-bottom: 2rem;">
+    <div class="key-guide-item"><span class="key-cap">A</span> Light</div>
+    <div class="key-guide-item"><span class="key-cap">S</span> Medium</div>
+    <div class="key-guide-item"><span class="key-cap">D</span> Heavy</div>
+    <div class="key-guide-item"><span class="key-cap">F</span> Flow</div>
+    <div class="key-guide-item"><span class="key-cap">Q</span> Special (236)</div>
+    <div class="key-guide-item"><span class="key-cap">E</span> Special (214)</div>
+    <div class="key-guide-item"><span class="key-cap">W</span> Jump Cancel</div>
+    <div class="key-guide-item"><span class="key-cap">Space</span> Super</div>
+    <div class="key-guide-item"><span class="key-cap">R</span> Command (6)</div>
+    <div class="key-guide-item"><span class="key-cap">T</span> Command (2)</div>
+  </div>
+
+  <!-- CHARACTER FILTER -->
+  <div style="display:flex;gap:0.4rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;" id="charFilter">
+    <div class="combo-pill active" data-char="all" onclick="filterChar('all')">All Characters</div>
+    <div class="combo-pill" data-char="Aang" data-element="air" onclick="filterChar('Aang')">🌬️ Aang</div>
+    <div class="combo-pill" data-char="Korra" data-element="water" onclick="filterChar('Korra')">💧 Korra</div>
+    <div class="combo-pill" data-char="Katara" data-element="water" onclick="filterChar('Katara')">💧 Katara</div>
+    <div class="combo-pill" data-char="Toph" data-element="earth" onclick="filterChar('Toph')">🪨 Toph</div>
+    <div class="combo-pill" data-char="Sokka" data-element="earth" onclick="filterChar('Sokka')">⚔️ Sokka</div>
+    <div class="combo-pill" data-char="Zuko" data-element="fire" onclick="filterChar('Zuko')">🔥 Zuko</div>
+    <div class="combo-pill" data-char="Azula" data-element="fire" onclick="filterChar('Azula')">🔥 Azula</div>
+    <div class="combo-pill" data-char="Ozai" data-element="fire" onclick="filterChar('Ozai')">🔥 Ozai</div>
+    <div class="combo-pill" data-char="Kyoshi" data-element="earth" onclick="filterChar('Kyoshi')">⚖️ Kyoshi</div>
+    <div class="combo-pill" data-char="Zaheer" data-element="air" onclick="filterChar('Zaheer')">💨 Zaheer</div>
+    <div class="combo-pill" data-char="Nightmare Korra" data-element="spirit" onclick="filterChar('Nightmare Korra')">👁️ N. Korra</div>
+  </div>
+
+  <!-- PROGRESS DOTS -->
+  <div class="progress-row" id="progressRow"></div>
+
+  <!-- COMBO SELECTOR -->
+  <div class="combo-selector" id="comboSelector"></div>
+
+  <!-- TRAINER -->
+  <div class="trainer">
+    <div class="trainer-header">
+      <div>
+        <div class="trainer-combo-name" id="comboName">—</div>
+        <div class="trainer-combo-char" id="comboChar">—</div>
+      </div>
+      <div class="trainer-meta">
+        <div class="trainer-stat">
+          <div class="trainer-stat-val" id="statHits">0</div>
+          <div class="trainer-stat-label">Hits</div>
+        </div>
+        <div class="trainer-stat">
+          <div class="trainer-stat-val" id="statStreak">0</div>
+          <div class="trainer-stat-label">Streak</div>
+        </div>
+        <div class="trainer-stat">
+          <div class="trainer-stat-val" id="statBest">0</div>
+          <div class="trainer-stat-label">Best</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trainer-display">
+      <div class="combo-sequence" id="comboSequence"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="timing-container" id="timingContainer" style="display:none;">
+        <div class="timing-bar">
+          <div class="timing-window" id="timingWindow"></div>
+          <div class="timing-perfect" id="timingPerfect"></div>
+          <div class="timing-indicator" id="timingIndicator"></div>
+        </div>
+        <div class="timing-labels">
+          <span>Early</span>
+          <span>Perfect Window</span>
+          <span>Late</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="combo-info" id="comboInfo"></div>
+
+    <div class="trainer-controls">
+      <button class="btn btn-primary" id="btnStart" onclick="startCombo()">Start Combo</button>
+      <button class="btn" id="btnReset" onclick="resetCombo()">Reset</button>
+      <button class="btn" id="btnPrev" onclick="prevCombo()">← Previous</button>
+      <button class="btn" id="btnNext" onclick="nextCombo()">Next →</button>
+    </div>
+  </div>
+
+  <!-- COMBO REFERENCE TABLE -->
+  <div class="combo-reference">
+    <h2 class="combo-ref-title">All Combos Reference</h2>
+    <table class="combo-ref-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Character</th>
+          <th>Name</th>
+          <th>Difficulty</th>
+          <th>Notation</th>
+        </tr>
+      </thead>
+      <tbody id="comboRefBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RESULTS OVERLAY -->
+<div class="results-overlay" id="resultsOverlay">
+  <div class="results-card">
+    <div class="results-title" id="resultsTitle">Combo Complete!</div>
+    <div class="results-grade" id="resultsGrade">A</div>
+    <div class="results-stats">
+      <div>
+        <div class="results-stat-val" id="resAccuracy">0%</div>
+        <div class="results-stat-label">Accuracy</div>
+      </div>
+      <div>
+        <div class="results-stat-val" id="resPerfects">0</div>
+        <div class="results-stat-label">Perfects</div>
+      </div>
+      <div>
+        <div class="results-stat-val" id="resMaxStreak">0</div>
+        <div class="results-stat-label">Max Streak</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;">
+      <button class="btn" onclick="closeResults()">Close</button>
+      <button class="btn btn-primary" onclick="closeResults();nextCombo()">Next Combo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p style="font-size:0.85rem; color:var(--text-muted);">
+    <a href="index.html">← Back to Guide</a> · Combos sourced from SuperCombo Wiki & community guides
+  </p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// COMBO DATA
+// Each step: { key: keyboard key, label: display, type: for coloring, input: game notation }
+// Types: light, medium, heavy, flow, special, super, jc (jump cancel)
+// ═══════════════════════════════════════════════════════
+
+const combos = [
+  // ═══ UNIVERSAL ═══
+  {
+    id: 0, name: 'Universal Light Chain', char: 'Any Character', element: 'air',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C',
+    desc: 'The most basic combo in the game. Chain Light into Medium into Heavy. Every character can do this. Foundation of all Avatar Legends combos.',
+    timingMs: 600,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+    ],
+  },
+  {
+    id: 1, name: 'Universal Special Cancel', char: 'Any Character', element: 'air',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 236C',
+    desc: 'Chain your basic combo into a Special Technique (QCF + Heavy). Special canceling is the core of all Avatar Legends combos.',
+    timingMs: 550,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'QCF + Heavy' },
+    ],
+  },
+  {
+    id: 2, name: 'Universal Super Finish', char: 'Any Character', element: 'spirit',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5C > 236C > 236 L+M+H',
+    desc: 'Combo into Super Art. Cancel a special into your Super Technique for massive damage. Costs 4 Energy. Primary round-ending route.',
+    timingMs: 380,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Special' },
+      { key: ' ', label: 'SUPER', type: 'super', input: 'Super Art' },
+    ],
+  },
+
+  // ═══ AANG ═══
+  {
+    id: 3, name: 'Aang Air Scooter BnB', char: 'Aang', element: 'air',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5AA > 5B > 2C > 214B',
+    desc: "Aang's basic confirm. Chain into Air Scooter (236B) for a stable knockdown. Cancel from crouch heavy for the best launch timing.",
+    timingMs: 500,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'q', label: '214B', type: 'special', input: 'Air Scooter' },
+    ],
+  },
+  {
+    id: 4, name: 'Aang Cyclone Launch', char: 'Aang', element: 'air',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5AA > 5B > 2C > 214C > j.2D > 2C > 236B',
+    desc: 'Cancel into Cyclone Strike (214C) which launches, then Flow-cancel with Wind Drop (j.2D) into a re-stand. Finish with Air Scooter. Core mid-level Aang route.',
+    timingMs: 430,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Cyclone Strike' },
+      { key: 'f', label: 'j.2D', type: 'flow', input: 'Wind Drop' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'q', label: '236B', type: 'special', input: 'Air Scooter' },
+    ],
+  },
+  {
+    id: 5, name: 'Aang Flow Loop', char: 'Aang', element: 'air',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5AA > 5B > 2C > 214C > j.2D > 2C > 236C~X > j.B > j.C > 2B > 2C > 214B',
+    desc: "Aang's most damaging BnB. After Cyclone Strike launch, Flow-cancel Air Scooter (236C~X) into aerial juggle, then land for a crouch string into Vaulting Strike. Requires multiple precise Flow cancels.",
+    timingMs: 350,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Cyclone Strike' },
+      { key: 'f', label: 'j.2D', type: 'flow', input: 'Wind Drop' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Air Scooter' },
+      { key: 'f', label: '~X', type: 'flow', input: 'Flow Cancel' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Air Heavy' },
+      { key: 's', label: '2B', type: 'medium', input: 'Crouch Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'e', label: '214B', type: 'special', input: 'Vaulting Strike' },
+    ],
+  },
+
+  // ═══ ZUKO ═══
+  {
+    id: 6, name: 'Zuko BnB', char: 'Zuko', element: 'fire',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5AA > 5B > 5C > 214C > 6B',
+    desc: "Zuko's fundamental combo. Cancel into Resolute Flash (214C), then follow with Dagger Combination (6B). Template for all Zuko routes.",
+    timingMs: 450,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Resolute Flash' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Dagger Combo' },
+    ],
+  },
+  {
+    id: 7, name: 'Zuko Burning Advance', char: 'Zuko', element: 'fire',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5AA > 5B > 5C > 214C > 623B',
+    desc: "Zuko's Burning Advance (623B) is a command grab ender that cannot be teched. Use after Resolute Flash for a guaranteed knockdown when close.",
+    timingMs: 450,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Resolute Flash' },
+      { key: 'e', label: '623B', type: 'special', input: 'Burning Advance' },
+    ],
+  },
+  {
+    id: 8, name: 'Zuko Metered Route', char: 'Zuko', element: 'fire',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5AA > 5B > 5C > 214EX > 6B > 5AA > 5B > 5C > 214B > 6B',
+    desc: 'EX Resolute Flash launches for an extended sequence. Spend 1 Energy for a full second string. Core metered route for Zuko.',
+    timingMs: 400,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Resolute Flash' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Dagger Combo' },
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214B', type: 'special', input: 'Resolute Flash' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Dagger Combo' },
+    ],
+  },
+  {
+    id: 9, name: 'Zuko Redemption Chain', char: 'Zuko', element: 'fire',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5AA > 5B > 5C > 214EX > 6B > 5AA > 5B > 5C > 214C > 6B > 236A~B~C',
+    desc: "Zuko's Dancing Dragon Form route. After building Redemption Gauge through combos, cancel into the triple-hit Scorching Spiral rekka (236A~B~C). Maximum damage but requires full Redemption meter.",
+    timingMs: 340,
+    steps: [
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Resolute Flash' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Dagger Combo' },
+      { key: 'a', label: '5AA', type: 'light', input: 'Light ×2' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Resolute Flash' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Dagger Combo' },
+      { key: 'q', label: '236A', type: 'special', input: 'Scorching Spiral 1' },
+      { key: 's', label: '~B', type: 'medium', input: 'Spiral 2' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Spiral 3' },
+    ],
+  },
+
+  // ═══ AZULA ═══
+  {
+    id: 10, name: 'Azula Bread & Butter', char: 'Azula', element: 'fire',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > C~214B > 5B > 5A > 5B > 5C~214B',
+    desc: "Azula's core BnB. Cancel into Prodigious Flash (214B), repeat normals, cancel again. Lenient cancel windows — fastest route to learn while doing meaningful damage.",
+    timingMs: 420,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'e', label: '~214B', type: 'special', input: 'Prodigious Flash' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '~214B', type: 'special', input: 'Prodigious Flash' },
+    ],
+  },
+  {
+    id: 11, name: 'Azula Air Route', char: 'Azula', element: 'fire',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5C~214EX > jc > j.A > j.B > j.C > 5A > 5B > 5C~214B',
+    desc: 'After EX Prodigious Flash, jump cancel into aerials, land, finish grounded. The air transition has a tight window — practice the EX cancel timing.',
+    timingMs: 380,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Flash' },
+      { key: 'w', label: 'jc', type: 'flow', input: 'Jump Cancel' },
+      { key: 'a', label: 'j.A', type: 'light', input: 'Air Light' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Air Heavy' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'e', label: '~214B', type: 'special', input: 'Flash' },
+    ],
+  },
+  {
+    id: 12, name: 'Azula Airdash Loop', char: 'Azula', element: 'fire',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 4B > 4C~214EX > jc > j.5A > j.5B > 9D > 5A > 5B > 5C > 5A > 5B > 5C~214B',
+    desc: 'EX Prodigious Flash into jump cancel, then airdash (9D) via Prodigious Talent to extend. Teaches the airdash cancel — solid damage midscreen.',
+    timingMs: 360,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 'a', label: '4B', type: 'medium', input: 'Back Medium' },
+      { key: 'd', label: '4C', type: 'heavy', input: 'Back Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Flash' },
+      { key: 'w', label: 'jc', type: 'flow', input: 'Jump Cancel' },
+      { key: 'a', label: 'j.5A', type: 'light', input: 'Air Light' },
+      { key: 's', label: 'j.5B', type: 'medium', input: 'Air Medium' },
+      { key: 'f', label: '9D', type: 'flow', input: 'Airdash' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '~214B', type: 'special', input: 'Flash' },
+    ],
+  },
+  {
+    id: 13, name: 'Azula Corner Fireball Loop', char: 'Azula', element: 'fire',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5A > 5B > 5C > 214A, B! > 5A > 5B > 5C > 214EX > dl j.B > 236B > j.5A > 9j.5A > j.5B > 236B > j.5A > 9j.5A > j.5B > 6D > j.5A, j.5C > 5A > 5B > 5C > 214A, B!',
+    desc: 'Corner loop hitting 20-30 hits. Just-frame B! launches, loops 236B fireballs with airdash reps (9j.5A) and Flow airdash (6D) repositioning. Focused stance only — Firelord removes just frames.',
+    timingMs: 320,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214A', type: 'special', input: 'Rolling Blaze' },
+      { key: 's', label: 'B!', type: 'medium', input: 'Just Frame!' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Blaze' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 'q', label: '236B', type: 'special', input: 'Fireball' },
+      { key: 'a', label: 'j.5A', type: 'light', input: 'Air Light' },
+      { key: 'a', label: '9j.5A', type: 'light', input: 'Airdash Light' },
+      { key: 's', label: 'j.5B', type: 'medium', input: 'Air Medium' },
+      { key: 'q', label: '236B', type: 'special', input: 'Fireball' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Flow Airdash' },
+      { key: 'e', label: '214A', type: 'special', input: 'Rolling Blaze' },
+      { key: 's', label: 'B!', type: 'medium', input: 'Just Frame!' },
+    ],
+  },
+
+  // ═══ KATARA ═══
+  {
+    id: 14, name: 'Katara Day 1 BnB', char: 'Katara', element: 'water',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '2A > 5B > 5C > 6C > 236A~C~B',
+    desc: "Katara's simplest confirm. Chain into Cascading Strike rekka (236A~C~B). Every three-hit rekka sequence deals the same damage — A > C > B is the most stable height combo.",
+    timingMs: 500,
+    steps: [
+      { key: 't', label: '2A', type: 'light', input: 'Crouch Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'r', label: '6C', type: 'heavy', input: 'Fwd Heavy' },
+      { key: 'q', label: '236A', type: 'special', input: 'Cascade 1' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Cascade 2' },
+      { key: 's', label: '~B', type: 'medium', input: 'Cascade 3' },
+    ],
+  },
+  {
+    id: 15, name: 'Katara Frostpath Carry', char: 'Katara', element: 'water',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 5C > 6C > 6D > j.B > j.C > land 2A > 5B > 5C > 236A~C~B',
+    desc: "Cancel into Frostpath (6D) to dash in on ice, then aerial juggle before landing into rekka ender. Great corner carry route using Katara's unique Ice Carpet movement.",
+    timingMs: 440,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'r', label: '6C', type: 'heavy', input: 'Fwd Heavy' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Frostpath' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Air Heavy' },
+      { key: 'a', label: '2A', type: 'light', input: 'Crouch Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236A', type: 'special', input: 'Cascade 1' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Cascade 2' },
+      { key: 's', label: '~B', type: 'medium', input: 'Cascade 3' },
+    ],
+  },
+  {
+    id: 16, name: 'Katara Metered Cascade', char: 'Katara', element: 'water',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5C > 6C > 236A~C~B > 236XX',
+    desc: 'Metered rekka into Water Whip Super (236XX). The rekka ender combos directly into the Super for massive damage. Katara\'s primary kill route.',
+    timingMs: 380,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'r', label: '6C', type: 'heavy', input: 'Fwd Heavy' },
+      { key: 'q', label: '236A', type: 'special', input: 'Cascade 1' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Cascade 2' },
+      { key: 's', label: '~B', type: 'medium', input: 'Cascade 3' },
+      { key: ' ', label: '236XX', type: 'super', input: 'Water Whip Super' },
+    ],
+  },
+  {
+    id: 38, name: 'Katara Big Damage Aerial', char: 'Katara', element: 'water',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5C > 214EX~6D~C > 5C > 6C, C > 6D~8D > j.5A > j.5B > j.236B > j.45C > j.5C',
+    desc: "From NotAlice. Start with 5C into EX Water Whip, Flow-cancel chain (6D~C) into re-stand, then double-Flow (6D~8D) to get airborne. Air combo with 236B fireball into Frigid Snap (j.45C) finish. Huge damage but demands tight aerial timing.",
+    timingMs: 330,
+    steps: [
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Water Whip' },
+      { key: 'f', label: '~6D', type: 'flow', input: 'Fwd Flow' },
+      { key: 'd', label: 'C', type: 'heavy', input: 'Heavy Cancel' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'd', label: '6C', type: 'heavy', input: 'Fwd Heavy' },
+      { key: 'r', label: 'C', type: 'heavy', input: 'Heavy Cancel' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Fwd Flow' },
+      { key: 'f', label: '~8D', type: 'flow', input: 'Jump Flow' },
+      { key: 'a', label: 'j.5A', type: 'light', input: 'Air Light' },
+      { key: 's', label: 'j.5B', type: 'medium', input: 'Air Medium' },
+      { key: 'q', label: 'j.236B', type: 'special', input: 'Air Fireball' },
+      { key: 'd', label: 'j.45C', type: 'heavy', input: 'Frigid Snap' },
+      { key: 'd', label: 'j.5C', type: 'heavy', input: 'Air Heavy' },
+    ],
+  },
+  {
+    id: 39, name: 'Katara Ground Air Ground', char: 'Katara', element: 'water',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5C > 6C,C > 214A~6D~8D > j.5A > j.5B > j.236B > j.5B > j.214A > 5B > 5C > 236A~B~A',
+    desc: "From NotAlice. Ground starter into Forward Flow cancel (6D) chained into Jump Flow (8D) to go airborne. Full aerial string with j.214A Water Whip, then land for a ground string into Cascading Strike rekka (236A~B~A). Do NOT mash Auto Combo during the aerial portion.",
+    timingMs: 320,
+    steps: [
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'd', label: '6C', type: 'heavy', input: 'Fwd Heavy' },
+      { key: 'd', label: 'C', type: 'heavy', input: 'Heavy Cancel' },
+      { key: 'e', label: '214A', type: 'special', input: 'Water Whip' },
+      { key: 'f', label: '~6D', type: 'flow', input: 'Fwd Flow' },
+      { key: 'f', label: '~8D', type: 'flow', input: 'Jump Flow' },
+      { key: 'a', label: 'j.5A', type: 'light', input: 'Air Light' },
+      { key: 's', label: 'j.5B', type: 'medium', input: 'Air Medium' },
+      { key: 'q', label: 'j.236B', type: 'special', input: 'Air Fireball' },
+      { key: 's', label: 'j.5B', type: 'medium', input: 'Air Medium' },
+      { key: 'e', label: 'j.214A', type: 'special', input: 'Air Water Whip' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236A', type: 'special', input: 'Cascade 1' },
+      { key: 's', label: '~B', type: 'medium', input: 'Cascade 2' },
+      { key: 'a', label: '~A', type: 'light', input: 'Cascade 3' },
+    ],
+  },
+
+  // ═══ KORRA ═══
+  {
+    id: 17, name: 'Korra Boulder Launch', char: 'Korra', element: 'water',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 6C > 236A~C',
+    desc: "Korra's basic confirm. Cancel into Boulder Crusher (6C) which launches grounded opponents higher, then Gale Fist (236C). Only cancelable on hit.",
+    timingMs: 500,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'r', label: '6C', type: 'heavy', input: 'Boulder Crusher' },
+      { key: 'q', label: '236A', type: 'special', input: 'Gale Fist Start' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Gale Fist End' },
+    ],
+  },
+  {
+    id: 18, name: 'Korra Avatar Cycle', char: 'Korra', element: 'water',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5B > 5C > 214H > 6H > 236H > 214EX',
+    desc: "Dragon's Fang (214H) is an invulnerable DP that ground bounces, then Boulder Crusher launches for Gale Fist finish. Korra's core damage structure.",
+    timingMs: 400,
+    steps: [
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214H', type: 'special', input: "Dragon's Fang" },
+      { key: 'd', label: '6H', type: 'heavy', input: 'Boulder Crusher' },
+      { key: 'q', label: '236H', type: 'special', input: 'Gale Fist' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Extension' },
+    ],
+  },
+  {
+    id: 19, name: 'Korra Platform Loop', char: 'Korra', element: 'water',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5A > 5B > 5C > 4C > 6D > j.B > j.8C > land j.8A > j.8C > j.214D > j.8C > land 2C > 214[B]',
+    desc: "Corner carry using Korra's earthbending platform (4C > 6D). Aerial juggle with angled attacks (j.8A/C), then Ice Slide ender. Costs 50% Flow.",
+    timingMs: 350,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'a', label: '4C', type: 'heavy', input: 'Back Heavy' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Flow Step' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 'd', label: 'j.8C', type: 'heavy', input: 'Up Air Heavy' },
+      { key: 'a', label: 'j.8A', type: 'light', input: 'Up Air Light' },
+      { key: 'd', label: 'j.8C', type: 'heavy', input: 'Up Air Heavy' },
+      { key: 'e', label: 'j.214D', type: 'special', input: 'Air Ice Slide' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'e', label: '214[B]', type: 'special', input: 'Charged Slide' },
+    ],
+  },
+
+  // ═══ TOPH ═══
+  {
+    id: 20, name: 'Toph Crushing Gauntlet BnB', char: 'Toph', element: 'earth',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 236C',
+    desc: "Toph's simplest confirm. Cancel into Crushing Gauntlet (236C) — the armored version that bursts through with a charge tackle. Good damage for its simplicity.",
+    timingMs: 520,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Crushing Gauntlet' },
+    ],
+  },
+  {
+    id: 21, name: 'Toph Seismic Wall Combo', char: 'Toph', element: 'earth',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 5C > 236C > 214CD',
+    desc: "Cancel Crushing Gauntlet into Seismic Sense Wall (214CD, 2 Energy). Creates a wall that stays out — hitting opponents into the wall causes a wallbounce for follow-ups.",
+    timingMs: 450,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Crushing Gauntlet' },
+      { key: 'e', label: '214CD', type: 'ex', input: 'Seismic Wall' },
+    ],
+  },
+  {
+    id: 22, name: 'Toph Rooted Stance Armor', char: 'Toph', element: 'earth',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 2D > 2D_A > 2D_B > 236C',
+    desc: "Enter Rooted Stance (2D hold) for Hyper Armor, then armor through the combo with A (stomp) and B (armor tackle) follow-ups. With The Boulder support, gains full Hyper Armor throughout.",
+    timingMs: 420,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'f', label: '2D', type: 'flow', input: 'Rooted Stance' },
+      { key: 'a', label: '2D_A', type: 'heavy', input: 'Stomp' },
+      { key: 's', label: '2D_B', type: 'heavy', input: 'Armor Tackle' },
+      { key: 'q', label: '236C', type: 'special', input: 'Crushing Gauntlet' },
+    ],
+  },
+  {
+    id: 23, name: 'Toph Boulder Blitz Wallbounce', char: 'Toph', element: 'earth',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5A > 5B > 5C > 236CD > wallbounce 5A > 5B > 5C > 6D > 5A > 5B > 5C > 236C',
+    desc: "EX Boulder Blitz (236CD) into Seismic Wall bounce. Full armored follow-up combo after wallbounce. The Boulder support enables holding Rooted Stance for Hyper Armor during the entire sequence.",
+    timingMs: 350,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236CD', type: 'ex', input: 'Boulder Blitz' },
+      { key: 'a', label: '5A', type: 'light', input: 'Wallbounce Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Earth Surf' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Crushing Gauntlet' },
+    ],
+  },
+
+  // ═══ SOKKA ═══
+  {
+    id: 24, name: 'Sokka Boomerang BnB', char: 'Sokka', element: 'earth',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 214A',
+    desc: "Sokka's basic confirm into Boomerang (214A). The boomerang returns and can hit again for extra damage. Simple and reliable.",
+    timingMs: 520,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214A', type: 'special', input: 'Boomerang' },
+    ],
+  },
+  {
+    id: 25, name: 'Sokka Space Sword Combo', char: 'Sokka', element: 'earth',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 6C > 236A > 214A',
+    desc: "Cancel into Space Sword Smash (6C overhead), then tactical dash into Boomerang. Good mixup potential since 6C is an overhead.",
+    timingMs: 460,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'r', label: '6C', type: 'heavy', input: 'Space Sword' },
+      { key: 'q', label: '236A', type: 'special', input: 'Tactical Dash' },
+      { key: 'e', label: '214A', type: 'special', input: 'Boomerang' },
+    ],
+  },
+  {
+    id: 26, name: 'Sokka Dirty Trick Setup', char: 'Sokka', element: 'earth',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 5C > 236C > 214CD',
+    desc: "Cancel into Rising Wallop (236C) then EX Boomerang (214CD). EX Boomerang has enhanced return properties. Sokka's go-to metered route.",
+    timingMs: 430,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Rising Wallop' },
+      { key: 'e', label: '214CD', type: 'ex', input: 'EX Boomerang' },
+    ],
+  },
+  {
+    id: 27, name: 'Sokka Hero Slide Loop', char: 'Sokka', element: 'earth',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 6D > 5A > 5B > 5C > 236C > 214CD > Hero Slide',
+    desc: "Tactical Dash (6D) to close gap, full confirm into EX Boomerang, then Hero Slide ender for hard knockdown. Sokka's most damaging non-super route.",
+    timingMs: 390,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Tactical Dash' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Rising Wallop' },
+      { key: 'e', label: '214CD', type: 'ex', input: 'EX Boomerang' },
+      { key: 'r', label: 'H.Slide', type: 'heavy', input: 'Hero Slide' },
+    ],
+  },
+
+  // ═══ KYOSHI ═══
+  {
+    id: 28, name: 'Kyoshi Warrior Stance BnB', char: 'Kyoshi', element: 'earth',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 236C',
+    desc: "Kyoshi's basic confirm. Cancel into her heavy special. Simple and effective with her long-reaching normals.",
+    timingMs: 520,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Heavy Special' },
+    ],
+  },
+  {
+    id: 29, name: 'Kyoshi Charge Armor Combo', char: 'Kyoshi', element: 'earth',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 6C (hold) > 5A > 5B > 5C > 236C',
+    desc: "Kyoshi's 6C is chargeable. Release at the right moment for enhanced properties, then confirm into a full string. Timing the charge release is key.",
+    timingMs: 450,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'r', label: '6C!', type: 'heavy', input: 'Charged Heavy' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Special' },
+    ],
+  },
+  {
+    id: 30, name: 'Kyoshi Flow Extension', char: 'Kyoshi', element: 'earth',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5C > 236C > 6D > 5A > 5B > 5C > 214C',
+    desc: "Cancel special into Flow movement (6D) for screen carry, then relaunch. Kyoshi's route to push opponents to the corner while maintaining damage.",
+    timingMs: 380,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Special' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Flow Move' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Ender' },
+    ],
+  },
+
+  // ═══ OZAI ═══
+  {
+    id: 31, name: 'Ozai Basic Confirm', char: 'Ozai', element: 'fire',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 5C > 214C',
+    desc: "Ozai's basic confirm. Cancel into his fire special. Straightforward but the unique Flow system means assist choice can change available moves mid-combo.",
+    timingMs: 450,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Fire Special' },
+    ],
+  },
+  {
+    id: 32, name: 'Ozai Air Juggle', char: 'Ozai', element: 'fire',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5CD dl. jc. dl. j.C > j.236CD, j.A > j.C > rejump j.A > j.B > j.C > j.236CD',
+    desc: "Ozai's aerial combo route. Delay jump cancel into air fireballs (j.236CD) with multi-jump extensions. Very high execution requirement — Ozai's combo structure breaks standard movement rules.",
+    timingMs: 360,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5CD', type: 'heavy', input: 'Heavy Cancel' },
+      { key: 'w', label: 'jc', type: 'flow', input: 'Jump Cancel' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Air Heavy' },
+      { key: 'q', label: 'j.236CD', type: 'ex', input: 'Air Fire EX' },
+      { key: 'a', label: 'j.A', type: 'light', input: 'Air Light' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Air Heavy' },
+      { key: 'a', label: 'j.A', type: 'light', input: 'Rejump Light' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Rejump Medium' },
+      { key: 'd', label: 'j.C', type: 'heavy', input: 'Rejump Heavy' },
+      { key: 'q', label: 'j.236CD', type: 'ex', input: 'Air Fire EX' },
+    ],
+  },
+
+  // ═══ ZAHEER ═══
+  {
+    id: 33, name: 'Zaheer Basic BnB', char: 'Zaheer', element: 'air',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 5C > 236C~C',
+    desc: "Zaheer's simplest confirm. Cancel into Piercing Gust (236C) with the follow-up slash (~C). If opponent is Unbalanced, the 2C~C > 214X routing changes — keep it simple.",
+    timingMs: 520,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Piercing Gust' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Gust Slash' },
+    ],
+  },
+  {
+    id: 34, name: 'Zaheer Flight Extension', char: 'Zaheer', element: 'air',
+    difficulty: 'medium', diffLabel: 'Medium',
+    notation: '5A > 5B > 4C > 214A > 6D > 5A > 5B > 5C > 236C~C',
+    desc: "Use Zaheer's axe kick (4C) to launch, cancel into Airburst (214A), then Flight (6D) to extend with air normals before landing for the Gust ender.",
+    timingMs: 440,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'r', label: '4C', type: 'heavy', input: 'Axe Kick Launch' },
+      { key: 'e', label: '214A', type: 'special', input: 'Airburst' },
+      { key: 'f', label: '6D', type: 'flow', input: 'Flight' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Piercing Gust' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Gust Slash' },
+    ],
+  },
+  {
+    id: 35, name: 'Zaheer Red Lotus Tag Combo', char: 'Zaheer', element: 'air',
+    difficulty: 'hard', diffLabel: 'Hard',
+    notation: '5A > 5B > 5C > 214C~C > Call Tag > 5A > 5B > 5C > 236C~C',
+    desc: "Zaheer's unique mechanic — summon a Red Lotus member mid-combo for an on-screen tag assist. The tag assist causes a cooldown, so timing it for maximum damage matters. If the tag member gets hit, cooldown doubles.",
+    timingMs: 380,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Piercing Gust' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Gust Slash' },
+      { key: 'f', label: 'TAG', type: 'flow', input: 'Red Lotus Call' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Piercing Gust' },
+      { key: 'd', label: '~C', type: 'heavy', input: 'Gust Slash' },
+    ],
+  },
+
+  // ═══ NIGHTMARE KORRA ═══
+  {
+    id: 36, name: 'N. Korra Basic BnB', char: 'Nightmare Korra', element: 'spirit',
+    difficulty: 'easy', diffLabel: 'Easy',
+    notation: '5A > 5B > 6B > 2D > 5A > 5B > 5C > 214C',
+    desc: "Nightmare Korra's basic anywhere combo. One Flow cancel (2D) then full string into ender. Works ground-to-air, and starting with 6B gives an easy conversion from its excellent range.",
+    timingMs: 480,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'r', label: '6B', type: 'medium', input: 'Fwd Medium' },
+      { key: 'f', label: '2D', type: 'flow', input: 'Flow Cancel' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Ender' },
+    ],
+  },
+  {
+    id: 37, name: 'N. Korra Energy Corner Loop', char: 'Nightmare Korra', element: 'spirit',
+    difficulty: 'expert', diffLabel: 'Expert',
+    notation: '5A > 5B > 2C > 214EX > 2C > 236C > 3D > j.B > j.2C > j.2D > 5A > 5B > 2C > 236C > 3D > j.B > j.2C > 5A > 5B > 5C > 214C',
+    desc: "Optimized 1-Energy corner loop. After EX launch, alternating 2C > 236C > 3D reps with aerial extensions. Hits extremely hard but demands frame-perfect Flow cancels (3D). The definitive Nightmare Korra combo.",
+    timingMs: 320,
+    steps: [
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'e', label: '214EX', type: 'ex', input: 'EX Launch' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Special' },
+      { key: 'f', label: '3D', type: 'flow', input: 'Flow Cancel' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 't', label: 'j.2C', type: 'heavy', input: 'Air Crouch H' },
+      { key: 'f', label: 'j.2D', type: 'flow', input: 'Air Flow' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 't', label: '2C', type: 'heavy', input: 'Crouch Heavy' },
+      { key: 'q', label: '236C', type: 'special', input: 'Special' },
+      { key: 'f', label: '3D', type: 'flow', input: 'Flow Cancel' },
+      { key: 's', label: 'j.B', type: 'medium', input: 'Air Medium' },
+      { key: 't', label: 'j.2C', type: 'heavy', input: 'Air Crouch H' },
+      { key: 'a', label: '5A', type: 'light', input: 'Light' },
+      { key: 's', label: '5B', type: 'medium', input: 'Medium' },
+      { key: 'd', label: '5C', type: 'heavy', input: 'Heavy' },
+      { key: 'e', label: '214C', type: 'special', input: 'Ender' },
+    ],
+  },
+];
+
+// ═══ STATE ═══
+let currentComboIdx = 0;
+let currentStep = 0;
+let isActive = false;
+let stats = { hits: 0, misses: 0, perfects: 0, streak: 0, maxStreak: 0 };
+let completedCombos = new Set();
+let stepStartTime = 0;
+let timingRaf = null;
+let activeCharFilter = 'all';
+
+// ═══ CHARACTER FILTER ═══
+function filterChar(charName) {
+  activeCharFilter = charName;
+  // Update filter pill styling
+  document.querySelectorAll('#charFilter .combo-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.char === charName);
+  });
+  // Filter visible combos
+  const filtered = combos.filter(c => charName === 'all' || c.char === charName);
+  if (filtered.length === 0) return;
+  // Find the combo in the main array
+  currentComboIdx = combos.indexOf(filtered[0]);
+  resetCombo();
+  loadCombo();
+}
+
+function getFilteredCombos() {
+  return combos.filter(c => activeCharFilter === 'all' || c.char === activeCharFilter);
+}
+
+// ═══ RENDER COMBO SELECTOR ═══
+function renderSelector() {
+  const el = document.getElementById('comboSelector');
+  const filtered = getFilteredCombos();
+  el.innerHTML = filtered.map(c => {
+    const i = combos.indexOf(c);
+    const cls = i === currentComboIdx ? 'active' : '';
+    const done = completedCombos.has(i) ? 'completed' : '';
+    return `<div class="combo-pill ${cls} ${done}" data-element="${c.element}" onclick="selectCombo(${i})">${c.name}</div>`;
+  }).join('');
+}
+
+// ═══ RENDER PROGRESS DOTS ═══
+function renderProgress() {
+  const el = document.getElementById('progressRow');
+  const filtered = getFilteredCombos();
+  el.innerHTML = filtered.map(c => {
+    const i = combos.indexOf(c);
+    let cls = '';
+    if (completedCombos.has(i)) cls = 'completed';
+    if (i === currentComboIdx) cls = 'current';
+    return `<div class="progress-dot ${cls}"></div>`;
+  }).join('');
+}
+
+// ═══ RENDER COMBO REFERENCE TABLE ═══
+function renderRefTable() {
+  const el = document.getElementById('comboRefBody');
+  el.innerHTML = combos.map((c, i) => `
+    <tr style="${activeCharFilter !== 'all' && c.char !== activeCharFilter ? 'opacity:0.3' : ''}">
+      <td style="font-family:var(--font-mono);color:var(--text-muted);">${String(i+1).padStart(2,'0')}</td>
+      <td>${c.char}</td>
+      <td style="font-weight:600;">${c.name}</td>
+      <td><span class="diff-badge ${c.difficulty}">${c.diffLabel}</span></td>
+      <td class="notation">${c.notation}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══ RENDER COMBO SEQUENCE DISPLAY ═══
+function renderSequence() {
+  const combo = combos[currentComboIdx];
+  const el = document.getElementById('comboSequence');
+  el.innerHTML = combo.steps.map((s, i) => {
+    let state = 'pending';
+    if (i < currentStep) state = 'hit';
+    if (i === currentStep && isActive) state = 'current';
+    return `
+      <div class="input-node ${state}" data-step="${i}">
+        <div class="input-key" data-type="${s.type}">${s.label}</div>
+        <div class="input-label">${s.input}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══ LOAD COMBO INFO ═══
+function loadCombo() {
+  const c = combos[currentComboIdx];
+  document.getElementById('comboName').textContent = c.name;
+  document.getElementById('comboChar').textContent = `${c.char} · ${c.diffLabel} · ${c.steps.length} inputs`;
+
+  // Set element color on name
+  const colors = { air:'var(--air)', water:'var(--water)', fire:'var(--fire)', earth:'var(--earth)', spirit:'var(--spirit)' };
+  document.getElementById('comboName').style.color = colors[c.element] || 'var(--text-primary)';
+
+  document.getElementById('comboInfo').innerHTML = `
+    <strong>${c.notation}</strong>
+    <div class="combo-notation">${c.notation}</div>
+    ${c.desc}
+    <br><br><strong>Timing Window:</strong> ${(c.timingMs/1000).toFixed(2)}s per input ·
+    <strong>Keys:</strong> ${c.steps.map(s => `<span style="font-family:var(--font-mono);color:var(--gold-bright)">${s.label}=[${s.key.toUpperCase()}]</span>`).join(' → ')}
+  `;
+
+  renderSequence();
+  renderSelector();
+  renderProgress();
+  resetStats();
+}
+
+// ═══ STATS ═══
+function resetStats() {
+  stats = { hits: 0, misses: 0, perfects: 0, streak: 0, maxStreak: 0 };
+  updateStatsDisplay();
+}
+
+function updateStatsDisplay() {
+  document.getElementById('statHits').textContent = stats.hits;
+  document.getElementById('statStreak').textContent = stats.streak;
+  document.getElementById('statBest').textContent = stats.maxStreak;
+}
+
+// ═══ START / RESET ═══
+function startCombo() {
+  currentStep = 0;
+  isActive = true;
+  resetStats();
+  renderSequence();
+  document.getElementById('btnStart').textContent = 'Restart';
+  document.getElementById('timingContainer').style.display = 'block';
+  stepStartTime = performance.now();
+  startTimingLoop();
+  showFeedback('', '');
+}
+
+function resetCombo() {
+  isActive = false;
+  currentStep = 0;
+  if (timingRaf) cancelAnimationFrame(timingRaf);
+  document.getElementById('btnStart').textContent = 'Start Combo';
+  document.getElementById('timingContainer').style.display = 'none';
+  renderSequence();
+  resetStats();
+  showFeedback('', '');
+}
+
+function selectCombo(i) {
+  currentComboIdx = i;
+  resetCombo();
+  loadCombo();
+}
+
+function prevCombo() {
+  const filtered = getFilteredCombos();
+  const filteredIdx = filtered.indexOf(combos[currentComboIdx]);
+  const nextFilteredIdx = (filteredIdx - 1 + filtered.length) % filtered.length;
+  currentComboIdx = combos.indexOf(filtered[nextFilteredIdx]);
+  resetCombo();
+  loadCombo();
+}
+
+function nextCombo() {
+  const filtered = getFilteredCombos();
+  const filteredIdx = filtered.indexOf(combos[currentComboIdx]);
+  const nextFilteredIdx = (filteredIdx + 1) % filtered.length;
+  currentComboIdx = combos.indexOf(filtered[nextFilteredIdx]);
+  resetCombo();
+  loadCombo();
+}
+
+// ═══ TIMING LOOP ═══
+function startTimingLoop() {
+  if (!isActive) return;
+  const combo = combos[currentComboIdx];
+  const elapsed = performance.now() - stepStartTime;
+  const progress = Math.min(elapsed / combo.timingMs, 1);
+
+  // Update timing bar
+  const indicator = document.getElementById('timingIndicator');
+  const window = document.getElementById('timingWindow');
+  const perfect = document.getElementById('timingPerfect');
+
+  // Indicator sweeps left to right
+  indicator.style.left = (progress * 100) + '%';
+
+  // Green window covers 20%-80% of the bar
+  window.style.left = '20%';
+  window.style.width = '60%';
+
+  // Perfect window covers 40%-60%
+  perfect.style.left = '40%';
+  perfect.style.width = '20%';
+
+  // If time runs out without input, count as miss
+  if (elapsed >= combo.timingMs * 1.3) {
+    handleMiss();
+    return;
+  }
+
+  timingRaf = requestAnimationFrame(startTimingLoop);
+}
+
+// ═══ KEY HANDLING ═══
+function handleKey(e) {
+  if (!isActive) {
+    if (e.key === 'Enter') { startCombo(); }
+    return;
+  }
+
+  const combo = combos[currentComboIdx];
+  const expected = combo.steps[currentStep];
+  const key = e.key.toLowerCase();
+
+  if (key === 'escape') { resetCombo(); return; }
+
+  // Prevent key repeat
+  if (e.repeat) return;
+
+  const elapsed = performance.now() - stepStartTime;
+  const progress = elapsed / combo.timingMs;
+
+  if (key === expected.key) {
+    // Determine timing quality
+    if (progress >= 0.35 && progress <= 0.65) {
+      // Perfect
+      handleHit('perfect');
+    } else if (progress >= 0.15 && progress <= 0.9) {
+      // Good
+      handleHit('good');
+    } else {
+      // Too early or late but right key
+      handleHit('good');
+    }
+  } else {
+    // Wrong key
+    handleMiss();
+  }
+}
+
+function handleHit(quality) {
+  const combo = combos[currentComboIdx];
+
+  stats.hits++;
+  stats.streak++;
+  if (stats.streak > stats.maxStreak) stats.maxStreak = stats.streak;
+  if (quality === 'perfect') stats.perfects++;
+
+  // Mark current node
+  const node = document.querySelector(`.input-node[data-step="${currentStep}"]`);
+  if (node) {
+    node.classList.remove('current');
+    node.classList.add(quality === 'perfect' ? 'perfect' : 'hit');
+  }
+
+  showFeedback(quality === 'perfect' ? 'PERFECT!' : 'HIT!', quality === 'perfect' ? 'perfect' : 'good');
+
+  currentStep++;
+
+  if (currentStep >= combo.steps.length) {
+    // Combo complete!
+    completeCombo();
+    return;
+  }
+
+  // Advance to next step
+  stepStartTime = performance.now();
+  updateStepDisplay();
+  updateStatsDisplay();
+}
+
+function handleMiss() {
+  stats.misses++;
+  stats.streak = 0;
+
+  const node = document.querySelector(`.input-node[data-step="${currentStep}"]`);
+  if (node) {
+    node.classList.remove('current');
+    node.classList.add('miss');
+  }
+
+  showFeedback('MISS!', 'miss');
+  updateStatsDisplay();
+
+  // Brief pause then reset to current step
+  setTimeout(() => {
+    if (node) {
+      node.classList.remove('miss');
+      node.classList.add('current');
+    }
+    stepStartTime = performance.now();
+    startTimingLoop();
+  }, 500);
+}
+
+function updateStepDisplay() {
+  document.querySelectorAll('.input-node').forEach((n, i) => {
+    n.classList.remove('current');
+    if (i === currentStep) n.classList.add('current');
+  });
+}
+
+// ═══ COMPLETE COMBO ═══
+function completeCombo() {
+  isActive = false;
+  if (timingRaf) cancelAnimationFrame(timingRaf);
+  document.getElementById('timingContainer').style.display = 'none';
+
+  showFeedback('COMPLETE!', 'complete');
+  completedCombos.add(currentComboIdx);
+
+  const accuracy = stats.hits / (stats.hits + stats.misses);
+  const perfectRate = stats.perfects / combos[currentComboIdx].steps.length;
+
+  let grade = 'C';
+  let gradeCls = 'C';
+  if (perfectRate >= 0.8 && stats.misses === 0) { grade = 'S'; gradeCls = 'S'; }
+  else if (perfectRate >= 0.5 && stats.misses === 0) { grade = 'A'; gradeCls = 'A'; }
+  else if (stats.misses <= 1) { grade = 'B'; gradeCls = 'B'; }
+
+  setTimeout(() => {
+    document.getElementById('resultsTitle').textContent = combos[currentComboIdx].name + ' Complete!';
+    document.getElementById('resultsGrade').textContent = grade;
+    document.getElementById('resultsGrade').className = 'results-grade ' + gradeCls;
+    document.getElementById('resAccuracy').textContent = Math.round(accuracy * 100) + '%';
+    document.getElementById('resPerfects').textContent = stats.perfects + '/' + combos[currentComboIdx].steps.length;
+    document.getElementById('resMaxStreak').textContent = stats.maxStreak;
+    document.getElementById('resultsOverlay').classList.add('active');
+  }, 800);
+
+  renderSelector();
+  renderProgress();
+}
+
+function closeResults() {
+  document.getElementById('resultsOverlay').classList.remove('active');
+}
+
+// ═══ FEEDBACK ═══
+function showFeedback(text, type) {
+  const el = document.getElementById('feedback');
+  el.textContent = text;
+  el.className = 'feedback ' + type;
+  if (text) el.classList.add('show');
+  if (text === '') { el.classList.remove('show'); return; }
+  setTimeout(() => {
+    if (el.textContent === text) el.classList.remove('show');
+  }, 600);
+}
+
+// ═══ INIT ═══
+document.addEventListener('keydown', handleKey);
+document.getElementById('resultsOverlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeResults();
+});
+
+renderSelector();
+renderProgress();
+renderRefTable();
+loadCombo();
+</script>
+
+</body>
+</html>
