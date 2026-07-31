@@ -1123,7 +1123,7 @@ body {
     <ul class="nav-links">
       <li><a class="nav-link" onclick="scrollToSection('overview')">Overview</a></li>
       <li><a class="nav-link" onclick="scrollToSection('mechanics')">Mechanics</a></li>
-      <li><a class="nav-link" onclick="scrollLink('roster')">Roster</a></li>
+      <li><a class="nav-link" href="roster.html">Roster</a></li>
       <li><a class="nav-link" onclick="scrollToSection('framedata')">Frame Data</a></li>
       <li><a class="nav-link" onclick="scrollToSection('editions')">Editions</a></li>
     </ul>
@@ -1352,7 +1352,7 @@ body {
 </section>
 
 <!-- ═══════════════════════════════════════════════════
-     ROSTER
+     ROSTER TEASER → links to roster.html
      ═══════════════════════════════════════════════════ -->
 <section class="section" id="roster">
   <div class="section-header">
@@ -1360,18 +1360,58 @@ body {
     <h2 class="section-title">The Launch Roster</h2>
     <p class="section-desc">
       12 playable fighters across Air, Water, Earth, Fire, and Spirit.
-      Click any character for their complete moveset, frame data, and support options.
+      Each with complete movesets, support variations, and competitive strategies.
     </p>
   </div>
 
-  <div class="roster-grid" id="rosterGrid">
-    <!-- Populated by JavaScript -->
-  </div>
+  <a href="roster.html" style="text-decoration:none;">
+    <div style="
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2rem;
+      text-align: center;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    " onmouseover="this.style.borderColor='var(--gold)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 40px rgba(0,0,0,0.5)'"
+       onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
 
-  <!-- Character Detail Panel -->
-  <div class="character-detail" id="characterDetail">
-    <!-- Populated by JavaScript -->
-  </div>
+      <!-- Element orbs preview -->
+      <div style="display:flex;justify-content:center;gap:1rem;margin-bottom:1.5rem;">
+        <span style="font-size:2rem;">🌀</span>
+        <span style="font-size:2rem;">🌊</span>
+        <span style="font-size:2rem;">⛰️</span>
+        <span style="font-size:2rem;">🔥</span>
+        <span style="font-size:2rem;">✨</span>
+      </div>
+
+      <div style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;color:var(--gold-bright);margin-bottom:0.5rem;">
+        Explore All 12 Fighters →
+      </div>
+      <div style="color:var(--text-secondary);font-size:1rem;max-width:500px;margin:0 auto;">
+        Full character art, complete movesets with frame data, support variations,
+        playstyle breakdowns, and competitive strategies.
+      </div>
+
+      <!-- Mini roster row -->
+      <div style="display:flex;justify-content:center;gap:0.5rem;margin-top:2rem;flex-wrap:wrap;">
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--air);border:1px solid rgba(127,196,232,0.3);">Aang</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--water);border:1px solid rgba(74,144,217,0.3);">Korra</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--fire);border:1px solid rgba(232,93,58,0.3);">Zuko</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--water);border:1px solid rgba(74,144,217,0.3);">Katara</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--earth);border:1px solid rgba(196,160,78,0.3);">Toph</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--nonbender);border:1px solid rgba(138,155,168,0.3);">Sokka</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--fire);border:1px solid rgba(232,93,58,0.3);">Azula</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--air);border:1px solid rgba(127,196,232,0.3);">Zaheer</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--fire);border:1px solid rgba(232,93,58,0.3);">Ozai</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--earth);border:1px solid rgba(196,160,78,0.3);">Kyoshi</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--spirit);border:1px solid rgba(155,109,212,0.3);">Avatar Aang</span>
+        <span style="background:var(--bg-elevated);padding:0.3rem 0.8rem;border-radius:99px;font-size:0.75rem;color:var(--spirit);border:1px solid rgba(155,109,212,0.3);">Nightmare Korra</span>
+      </div>
+    </div>
+  </a>
 </section>
 
 <!-- ═══════════════════════════════════════════════════

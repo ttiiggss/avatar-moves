@@ -1,0 +1,720 @@
+<script>
+// Character data with full move lists
+const characters = [
+  {
+    id: 'aang', num: '01', name: 'Aang', element: 'air', elementLabel: 'Airbending',
+    archetype: 'Rushdown', difficulty: 4, series: 'The Last Airbender',
+    voice: 'Da-Ni Lin', supports: ['Gyatso','Appa','Momo'],
+    mechanic: 'Avatar State — Activates automatically after losing 1 Round and gaining 7 Energy. Once per match. All H attacks and specials empowered.',
+    playstyle: 'Hyper-mobile trickster. Aang toys with opponents using omnidirectional movement, air dashes, and unpredictable Flow routes. Not a traditional all-rounder — he\'s hard to catch but hard to master.',
+    moves: {
+      'Command Normals': [
+        ['Hurricane Palm','H (Hold)','Flow Cancel','Charged: more range, blockstun, Wall Splat'],
+        ['Slipstream Strike','6M','Overhead, Flow Cancel','Spinning overhead; Ground Bounce on airborne'],
+        ['Cloudburst Sweep','6H','Low, Flow Cancel','Attacks legs from afar'],
+        ['Descending Typhoon','(Air) 2H','Overhead, Flow Cancel','Large arc attack'],
+        ['Descending Hurricane','(Air) 2H (Hold)','Overhead, Flow Cancel','Slower, enables combos'],
+      ],
+      'Flow Moves': [
+        ['Featherstep','6F','Avoids Lows, Flow Cancel','Low hop; dashable follow-ups'],
+        ['— Gust Lash','L','Overhead','Quick air attack'],
+        ['— Vortex Sphere','M','Overhead','+on block, combos on hit'],
+        ['— Tornado Screw','H','—','Pierces projectiles'],
+        ['Takeoff','4F','Flow Cancel','Escapes to air, cancelable'],
+        ['Stillness Technique','2F','Avoids Highs, Flow Cancel','Lies prone; can move slowly'],
+        ['— Enlightened Exhale','L','Low','Quick breath to feet'],
+        ['— Skybound Spiral','M','—','Multi-hit launcher, nullifies projectiles'],
+        ['— Cyclone Vault','H','Avoids Lows','Boosts high into air'],
+        ['Glider (Low)','(Air) F','Flow Cancel','Descends then pulls up; 1/jump'],
+        ['Glider (Vertical)','(Air) 4F','Flow Cancel','Flies higher; evasion'],
+        ['Glider (High)','(Air) 6F','Flow Cancel','Ascends then drives forward'],
+        ['Wind Drop','(Air) 2F','—','Fast descent to ground'],
+      ],
+      'Specials': [
+        ['Air Scooter','236 L/M/H','Element Surge','Rides forward; H = higher launch'],
+        ['— Scooter Jump','L/M/H','—','Jump off scooter (hit only)'],
+        ['— Scooter High Jump','8 L/M/H','—','Higher jump; avoids projectiles'],
+        ['EX Air Scooter','236 +2atk','2 Energy, Element Surge','Faster, higher launch + Wind Summon'],
+        ['Vaulting Strike','214 L/M','—','L=fast/unsafe; M=slower/GC to punish'],
+        ['Cyclone Strike','214 H','Flow Cancel','Wall Bounce; hits downed'],
+        ['EX Vaulting Strike','214 +2atk','2 Energy, Invulnerable','3-hit sequence, invuln on 1st hit'],
+        ['Tornado Drop','(Air) 236L','Overhead','Multi-hit; hits downed'],
+        ['Glider Fang','(Air) 236M','Overhead','Can hit behind opponent'],
+        ['Cyclone Strike (Air)','(Air) 236H','—','Combo ender'],
+        ['EX Glide Fang','(Air) 236+2atk','2 Energy, Overhead','Element Surge + Wind Summon'],
+        ['Wind Summon (Push)','236F','1 Energy','Pushes airborne opponents forward'],
+        ['Wind Summon (Pull)','214F','1 Energy','Pulls airborne opponents backward'],
+      ],
+      'Supers': [
+        ['Improvised Airbending Combination','236 L+M+H','4 Energy','Hard Knockdown'],
+        ["Avatar's Reckoning",'214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+      'Critical Hits': [
+        ['Pacifist','Flow Stance ×3','+2 Energy','No attacking; once per round'],
+        ['Troublemaker','2M after Wind Drop','+2 Energy, Launches','Once per round'],
+        ['Trickster','Tornado Drop/Glide Fang ×3','+1 Energy, Launches','Once per round'],
+        ['Twinkle Toe-rrent','Aerial Throw during Glider/Scooter','+1 Energy','Combo enable'],
+      ],
+    },
+    supportDetails: [
+      {name:'Gyatso', type:'Balanced', desc:'Empowers Air Scooter specials. Speed control + expanded combo routes. Good but complicated.'},
+      {name:'Appa', type:'Mobility / Easiest', desc:'All normals become Flow Cancelable. Easiest to use, but risky — abuse leads to Unbalanced.'},
+      {name:'Momo', type:'Setplay / Hardest', desc:'Adds glider speed control + faster cancel options. Strongest in competent hands, hardest to use.'},
+    ],
+  },
+  {
+    id: 'korra', num: '02', name: 'Korra', element: 'water', elementLabel: 'Multi-Element Avatar',
+    archetype: 'Rushdown', difficulty: 3, series: 'The Legend of Korra',
+    voice: '—', supports: ['Naga','Tonraq','Raava'],
+    mechanic: 'Avatar Cycle — Hit with bending in Water→Earth→Fire→Air order to empower next special. Completing cycle regains 25% Flow. Avatar State available via Super or auto at <25% HP.',
+    playstyle: 'The "gorilla." Forces interactions at her pace with good mobility, range, damage, and zero patience. Intuitive at all skill levels but hides enormous depth. Satisfying to pilot.',
+    moves: {
+      'Command Normals': [
+        ["Badgermole's Lift",'4H','Avoids Lows','Earthbend platform to jump from'],
+        ['— Cyclone Kick','L/M','Overhead','Arcing air kick'],
+        ["— Dragon's Dive",'H','—','Fire dive + flame pillar; +on block'],
+        ['— Ignition Step (Lift)','F','—','Firebend forward+up; cancelable'],
+        ['Boulder Crusher','6H','—','Earthbending uppercut launcher; cancelable on hit only'],
+        ['Wind Fist (Anti-Air)','(Air) 8L','—','Upward-angle j.L'],
+        ["Tigershark's Fang (AA)",'(Air) 8H','—','Upward-angle j.H'],
+      ],
+      'Flow Moves': [
+        ['Ignition Step (Run)','6F','—','Firebend dash; cancelable into jumps/specials'],
+        ['— Tempest\'s Roar','H','Flow Cost','Airbending dropkick; Wall Bounce (no Naga)'],
+        ['— Reverse Featherstep','4F','Avoids Lows','Earth+air spin backward'],
+        ['Flowing Step','4F','—','Backward airbending spin'],
+        ['— Reverse Featherstep','4F','Avoids Lows','Into Ignition Step (Air)'],
+        ['Ice Slide','2F (Hold)','Avoids Highs','Waterbend ice slide forward'],
+        ["— Avatar's Assault",'H','Flow Cost','All-element combo; Wall Bounce'],
+        ['— Avatar\'s Path (Hurricane)','(Tonraq) 2atk','Flow Cost','Enhanced combo finisher'],
+        ['Ignition Step (Air)','(Air) F','—','During Reverse Featherstep or Avatar State'],
+      ],
+      'Specials': [
+        ['Wave Fist','236 L/M','High','Water projectile; M=more range/recovery'],
+        ['— Streaming Wave','L','High','2 smaller projectiles'],
+        ['— Wave Piercer','M','High','Flying ice kick; pierces projectiles'],
+        ['— Avalanche Wave','H','Overhead, Element Surge','Freezes on hit; +on block'],
+        ['Gale Fist','236H','High','Full-screen air projectile; Wall Bounce when Empowered'],
+        ['EX Gale Fist','236+2atk','1 Energy','Fast; Avatar\'s Path follow-up'],
+        ['Sky Splitter','214 L/M','—','Arcing air kick; counters high-evaders'],
+        ['Wildfire Splitter','214 L/M (Hold)','—','Fire kick + pillar; +on block; Element Surge'],
+        ["Dragon's Fang",'214H','Invulnerable','Rising fire knee + slam; Ground Bounce'],
+        ['EX Dragon\'s Fang','214+2atk','2 Energy, Invulnerable','Avatar\'s Path follow-up'],
+        ['Cyclone Kick','(Air) 214 L/M','Overhead','Airbending kick'],
+        ["Dragon's Dive",'(Air) 214H','Overhead','Fire kick + pillar; +on block'],
+        ["Avatar's Descent",'(Air) 214+2atk','1 Energy','Air kick → ice slide'],
+        ['Spiritual Purification','236F','2 Energy, Throw','Drains Flow + launches; extra vs Flow Stance'],
+        ['Flying Wave Piercer','(Air) 214F','2 Energy','Rising ice kick; pierces projectiles'],
+      ],
+      'Supers': [
+        ['Avatar State (Activate)','236 L+M+H','4 Energy, Invulnerable','Burst launches; restores Flow if Unbalanced'],
+        ['Last Stand','214 L+M+H','7 Energy, Invulnerable','Elemental sphere + spirit blast'],
+      ],
+      'Critical Hits': [
+        ['Hot-Headed','First hit of round','+1 Energy','No defending/getting hit first'],
+        ['Fearless','Dragon\'s Fang during Ignition Step','+1 Energy','Non-combo only'],
+        ['All-In','Tempest\'s Roar first in round','+1 Energy','Higher Wall Bounce'],
+        ['Following the Cycle','Complete Avatar Cycle','Regain 25% Flow','First time per match'],
+        ["Spirit's Guidance",'Spiritual Purification vs Flow Stance','+1 Energy, opponent -1','Extra Flow drain'],
+      ],
+    },
+    supportDetails: [
+      {name:'Naga', type:'Mobility / Easy', desc:'Limits some offense but makes movement more responsive. Easy; you\'ll outgrow it.'},
+      {name:'Tonraq', type:'Offense', desc:'Enhances Flow specials, reduces cost, adds combo options. Reduces Avatar\'s Path cost, always Empowered.'},
+      {name:'Raava', type:'Avatar State / Advanced', desc:'Avatar State install becomes permanent until round ends. Don\'t use until you\'ve mastered Korra.'},
+    ],
+  },
+  {
+    id: 'zuko', num: '03', name: 'Zuko', element: 'fire', elementLabel: 'Firebending',
+    archetype: 'All-rounder', difficulty: 3, series: 'The Last Airbender',
+    voice: 'Vincent Tong', supports: ['Mai','Ran & Shaw','June'],
+    mechanic: 'Redemption Gauge — Earn permanent levels through combat (Unbalanced: +8, Honor Pivot: +2, Blue Spirit: +2). Each level = 10 points. Reduces Flow costs for Redemption Chains + unlocks Critical Hits. Entering Unbalanced permanently grants +1 Level. Progress persists across rounds.',
+    playstyle: 'The closest to a "traditional" fighting game character. Low skill floor, enormous skill ceiling. His Redemption Chain system lets him cancel specials into other specials. Versatile — can play aggressively or defensively.',
+    moves: {
+      'Command Normals': [
+        ['Igniting Blast','4M','High, Flow Cancel','Knocks up for combos'],
+        ['Honor Pivot','4H','Invulnerable Counter','+2 Redemption on hit; loses to lows'],
+        ['Blazing Dive','(Air) 2 L/M/H','Flow Cancel','Near jump peak only'],
+      ],
+      'Flow Moves': [
+        ['Burning Advance','6F','Flow Cancel','Runs forward, gains speed'],
+        ['— Burning Strike','L','High','Hard to punish'],
+        ['— Burning Lift','M','—','Large area attack'],
+        ['— Burning Launch','M (Hold)','Redemption Chain','Creates Ground Fire when charged'],
+        ['— Burning Jump','H','Avoids Lows','Retains momentum'],
+        ['— Halt','F','—','Stops the dash'],
+        ['Legacy Fade','4F','Flow Cancel','Quick back-hop'],
+        ['Dancing Dragon Form','2F','Avoids Highs, Flow Cancel','Low stance with follow-ups'],
+        ['— Scorching Spiral','L','Low','Hits front + behind'],
+        ['— D.D. Cutter','M','Element Surge','Kicks upward; aerial actions after'],
+        ['— D.D. Shot','H','Redemption Chain','Full-screen fire blast'],
+        ['Sunfire Spiral','F','Avoids Lows, Flow Cancel','Forward somersault'],
+        ['— Sunflare Spike','L','—','Drops straight down; hard to punish'],
+        ['— Sunflare Shot','M','—','Angled fire shot; anti-zoning'],
+        ['— Sunflare Flurry','H','—','Multiple downward fire shots'],
+        ['Combustion Boost (Up)','(Air) F','Flow Cancel','Propels higher'],
+        ['Combustion Boost (Back)','(Air) 4F','Flow Cancel','Propels backward'],
+        ['Combustion Boost (Fwd)','(Air) 6F','Flow Cancel','Propels forward'],
+        ['Quick Turn','(Air) 2F','Flow Cancel','Turns around mid-air'],
+      ],
+      'Specials': [
+        ['Dancing Dragon Shot','236L','High, Redemption Chain','Fast projectile, short range'],
+        ['Dancing Dragon Blast','236L (Hold)','High, Redemption Chain','Longer range, Wall Bounce'],
+        ['Fire Fists','236M','Redemption Chain','2 projectiles'],
+        ['Fire Fist Barrage','236M (Hold)','Redemption Chain','4 projectiles'],
+        ['Rolling Flame','236H','Low, Redemption Chain','Slow projectile, speeds up'],
+        ['Rolling Inferno','236H (Hold)','Low, Redemption Chain','Even slower, grows larger'],
+        ['EX Fire Fist Barrage','236+2atk','1 Energy, High','5 shots; huge Redemption potential'],
+        ['Resolute Flash','214 L/M/H','—','Dash with fire daggers; distance varies'],
+        ['EX Resolute Flash','214+2atk','2 Energy','4 hits; enhanced follow-ups'],
+        ['→ Dagger Combination','6L','High','Strong pressure'],
+        ['→ Vengeful Buster','6M','Overhead','Ground Bounce'],
+        ["→ Zhao's Downfall",'6H','Low','+on block; pulls opponent in'],
+        ['Ground Fire','22L','Low','Creates damaging fire'],
+        ['Ground Fire (Large)','22M','Low','Slower, longer/larger fire'],
+        ['Sunborn Skyward Shot','22H','Element Surge','Fires upward'],
+        ['Sunborn Skyward Blast','22H (Hold)','Element Surge','Bigger blast'],
+        ['Banished Comet','(Air) 236 L/M/H','Redemption Chain','Diving attack + fire on landing'],
+      ],
+      'Supers': [
+        ['Blue Spirit Liberation','236 L+M+H','4 Energy','+2 Redemption on hit; Hard Knockdown'],
+        ['Ancient Firebending: Zuko Style','214 L+M+H','7 Energy','NOT invulnerable (unique among Finals)'],
+      ],
+      'Critical Hits': [
+        ['Seeking Honor','Sunborn Skyward Blast on airborne opponent','+1 Energy, +4 Redemption','Not in hitstun'],
+        ['Questioning Allegiance','(Redemption Lv1+) Zhao\'s Downfall after Honor Pivot','—','Unlocked by Redemption Level'],
+      ],
+    },
+    supportDetails: [
+      {name:'Mai', type:'Projectile / Best Starter', desc:'Powers projectiles. Gain Redemption on hit/block. Feint to bait jumps. Best for beginners.'},
+      {name:'Ran & Shaw', type:'Rushdown Flavor', desc:'Hint of rushdown. Need advancing moves for faster Redemption. Increases movement speed.'},
+      {name:'June', type:'Aerial', desc:'Improves aerial attacks. Strong but requires fighting game familiarity.'},
+    ],
+  },
+  {
+    id: 'katara', num: '04', name: 'Katara', element: 'water', elementLabel: 'Waterbending',
+    archetype: 'Zoner', difficulty: 3, series: 'The Last Airbender',
+    voice: '—', supports: ['Kanna','Master Pakku','Hakoda'],
+    mechanic: 'Water Whip Stance — Locks her in place for normal movement, but Flow Movement (Frostpath) lets her skate forward/backward while empowering her whip attacks. Cannot Guard in stance — move only via Flow.',
+    playstyle: 'Reactive defensive zoner. Controls distance with water attacks. Her Water Whip + Flow skating is terrifying at the right range. Weak aerial movement is her Achilles heel.',
+    moves: {
+      'Flow Moves': [
+        ['Frostpath (Forward)','6F','Flow Cancel','Ice skating dash; empowers Water Whips'],
+        ['Frostpath (Backward)','4F','Flow Cancel','Backward skating'],
+        ['— Snowdrift Flip (Low)','6F','Avoids Lows','Low flip; empowers aerial Water Whip'],
+        ['— Snowdrift Flip (High)','8F','Avoids Lows','Higher flip; empowers aerial Water Whip'],
+      ],
+      'Specials': [
+        ['Cascading Strike','236L','—','Fast water attack; chains ×2 more'],
+        ['Cascading Sweep','236M','Low','Chains ×2 more'],
+        ['Cascading Crash','236H','Overhead','Chains ×2 more'],
+        ['EX Cascading Strike','236+2atk','1 Energy','Chains up to ×3 more'],
+        ['Water Whip Stance (Enter)','214L','—','Enter stance; no Guard, Flow-only movement'],
+        ['Water Whip Stance (Evade)','214M','—','Spin back then enter stance'],
+        ['Water Whip Stance (Strike)','214H','—','Icy attack → stance'],
+        ['EX Water Whip Stance','214+2atk','2 Energy','Launching attack → stance; combos'],
+        ['— Water Whip (High)','L','High','Large area whip'],
+        ['— Water Whip (Low)','M','Low','Legs attack'],
+        ['— Water Whip (Vertical)','H','High','Launches upward'],
+        ['— EX Water Whip','2atk','2 Energy, Overhead','Element Surge; freezes opponent'],
+        ['— Cancel','F','—','Exit stance'],
+        ['Aerial Water Whip','(Air) 214 L/M/H','Overhead','3 angles; empowered after Snowdrift Flip'],
+        ['EX Aerial Water Whip','(Air) 236+2atk','1 Energy','3 successive whips'],
+        ['Frigid Snap','(Air) 236L','—','Shallow ice projectile (1/jump)'],
+        ['Frigid Snap (Steep)','(Air) 236M','—','Steep projectile; can act after'],
+        ['Seeking Snap','(Air) 236H','—','Delayed tracking projectile'],
+        ['EX Seeking Snap','(Air) 236+2atk','1 Energy','3 tracking projectiles'],
+        ['Protective Surge','236F','2 Energy, Invulnerable','Healing ice; extend with Flow'],
+      ],
+      'Supers': [
+        ['Spiritflow Strike','236 L+M+H (Hold)','4 Energy','Hard Knockdown; freeze pillar (hold extends range)'],
+        ['Oceanborn Torrent','214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+      'Critical Hits': [
+        ['Precise','Water Whip (High) after Frostpath ×2','+1 Energy','Bonus damage'],
+        ['Protective','Empowered Water Whip (Vertical) on airborne','+1 Energy','Enables combos'],
+        ['Determined','Empowered Aerial WW (A) during Snowdrift Flip (High)','+1 Energy','—'],
+        ['Healer','Extend Protective Surge','+1 Energy','Additional healing'],
+      ],
+    },
+    supportDetails: [
+      {name:'Kanna', type:'Default / Versatile', desc:'Water Whip cancels into more Water Whips. Hard to use but very versatile.'},
+      {name:'Master Pakku', type:'Easy / Balanced', desc:'Increases movement speed. One special becomes Flow cancellable. Easiest; boosts offense + defense.'},
+      {name:'Hakoda', type:'Aerial Coverage', desc:'Greater air control after projectiles. Two air projectiles per jump. Covers Katara\'s weakness.'},
+    ],
+  },
+  {
+    id: 'toph', num: '05', name: 'Toph Beifong', element: 'earth', elementLabel: 'Earthbending',
+    archetype: 'Brawler', difficulty: 3, series: 'The Last Airbender',
+    voice: 'Vivian Vencer', supports: ['Badgermole','The Boulder','The Hippo'],
+    mechanic: 'Seismic Sense & Armor — Many moves have armor properties that shrug off hits. Guaranteed 2 Chakra on Critical Throw enables huge damage. Anti-air throw has 3f startup — the scariest anti-air in the game.',
+    playstyle: 'A "gorilla" like Korra. Imposes offense with armor and overwhelm. Can bully opponents by throwing rocks or execute tricky setplay. Perfect adaptation of the character — can mash to win OR outsmart.',
+    moves: {
+      'Flow Moves': [
+        ['Earth Step (Forward)','6F','Flow Cancel','Forward movement'],
+        ['Earth Step (Backward)','4F','Flow Cancel','Backward movement'],
+        ['Seismic Sense','2F','Avoids Highs, Flow Cancel','Lies low to the ground'],
+        ['— Rumble','L','Low','Ground attack'],
+        ['— Quake','M','—','Launcher'],
+        ['— Pillar Rise','H','Avoids Lows','Launches self upward'],
+      ],
+      'Specials': [
+        ['Rock Crush','236 L/M/H','—','Earthbending strike; H launches'],
+        ['Rock Crush (Hold)','236H (Hold)','—','Longer charge, more damage'],
+        ['EX Rock Crush','236+2atk','1 Energy','Launcher with super armor'],
+        ['Earthquake Slam','214 L/M/H','—','Ground pound; hits around Toph'],
+        ['EX Earthquake Slam','214+2atk','1 Energy','Larger area, launches'],
+        ['Boulder Toss','(Air) 236 L/M/H','—','Aerial earth projectile'],
+        ['EX Boulder Toss','(Air) 236+2atk','1 Energy','Multiple rocks'],
+        ['Seismic Platform','22F','—','Creates earth platform'],
+        ['Earth Wall','214F','1 Energy','Defensive earth wall'],
+      ],
+      'Supers': [
+        ['Crushing Blow','236 L+M+H','4 Energy','Hard Knockdown'],
+        ['Mother of All Quakes','214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+      'Critical Hits': [
+        ['Rude','Character-specific throw taunt','—','e.g. "Someone\'s a little light on their feet, huh Twinkletoes?"'],
+        ['Immoveable','Counter Hit with specific earth attack','+1 Energy, Launches','—'],
+      ],
+    },
+    supportDetails: [
+      {name:'Badgermole', type:'Easy / Tracking', desc:'Buffs 214 specials. Hold F during 214 for tracking projectile. Devastating vs impatient players.'},
+      {name:'The Boulder', type:'Armor / Beginner', desc:'More armor. Movement harder to interrupt. Throw allows combo follow-ups.'},
+      {name:'The Hippo', type:'Platform / Hard', desc:'Expands platform hit area + repositionable. Vastly expands range. Hard to utilize.'},
+    ],
+  },
+  {
+    id: 'sokka', num: '06', name: 'Sokka', element: 'nonbender', elementLabel: 'Non-Bender (Weapons)',
+    archetype: 'Setplay', difficulty: 4, series: 'The Last Airbender',
+    voice: '—', supports: ['Suki','Master Piandao','Princess Yue'],
+    mechanic: 'Non-Bender — All normals Flow Cancelable. Command Normals CANNOT be Flow Canceled but CAN be Jump Canceled. Only chains L→M (not into H). Knowledge-check character with devastating gimmicks.',
+    playstyle: '"Just a guy with a boomerang" in a world of elemental wizards. Works harder than average. Powerful knowledge-check moves destroy uninformed opponents, but requires deep fundamentals and execution long-term. Thoroughly teaches fighting game 101.',
+    moves: {
+      'Command Normals': [
+        ['Rising Wallop','4M','Jump Cancel','Knocks up for combos; NOT Flow cancelable'],
+      ],
+      'Flow Moves': [
+        ['Tactical Dash (Forward)','6F','Flow Cancel','Runs forward'],
+        ['— Face First Express','L','Low','Hold to extend distance'],
+        ['— Space Sword Smash','M','Overhead, Invulnerable','Can hit behind Sokka'],
+        ['— Tactical Jump','H','Avoids Lows','Retains dash momentum'],
+        ['— Quick Stop','F','—','Stops dash (release F quickly!)'],
+        ['Tactical Dash (Backward)','4M','Flow Cancel','Same follow-ups as Forward'],
+        ['Hero Slide','2M','Avoids Highs, Flow Cancel','Passes through opponent'],
+        ['— Dirty Trick','L/M/H','Blind','Causes Blind status on hit'],
+        ['— Super Vault','(Air, near wall) 6F','—','Wall jump'],
+      ],
+      'Specials': [
+        ['Boomerang (Forward)','(has Boomerang) 236L','High','Throws forward; must catch!'],
+        ['Boomerang (Upward)','236M','—','Arcs up then down'],
+        ['Boomerang (Back)','236H','—','Throws backward; low-evadable return'],
+        ['Flying Boomerang (Fwd)','(Air) 236L','High','Straight forward and back'],
+        ['Flying Boomerang (Down)','(Air) 236M','—','Spins downward'],
+        ['Flying Boomerang (Up)','(Air) 236H','—','Up then arcs down'],
+        ['EX Boomerang','236+2atk (Air OK)','2 Energy, High','Launches; no bounce off opponent'],
+        ['Boomerang Catch','(move into boomerang)','—','Auto-catch; can block during animation'],
+        ['Super Slash','214L','—','Upward Space Sword slash'],
+        ['Super Slash (Launch)','214M','—','Launches for combos'],
+        ['Super Duper Slash','214H','UNBLOCKABLE, High','Launches'],
+        ['EX Super Slash','214+2atk','2 Energy','Fast launcher'],
+        ['Meteor Drop','(Air) 214 L/M','Overhead','Dives with sword'],
+        ['EX Meteor Drop','(Air) 214+2atk','2 Energy, Overhead','Launches'],
+      ],
+      'Supers': [
+        ["Warrior's Blessing",'236 L+M+H','4 Energy','Buff state: faster dash + huge Flow regen (with Suki)'],
+        ['Forbidden Knowledge Drop','214 L+M+H','7 Energy, Invulnerable','—'],
+      ],
+      'Critical Hits': [
+        ['(TBD)','Super Duper Slash out of Flow Stance','—','—'],
+        ['(TBD)','Space Sword Smash vs Blinded opponent','—','—'],
+        ['(TBD)','Counter Hit with Standing H','—','—'],
+        ['(TBD)','Low-height aerial Super Boomerang H','—','—'],
+      ],
+    },
+    supportDetails: [
+      {name:'Suki', type:'Hit-and-Run / Tricky', desc:'Boosts hit-and-run + power-up super. Cheaper Flow cancels. Tricky, requires training.'},
+      {name:'Master Piandao', type:'Easy / Sword Buffs', desc:'Buffs sword specials each hit. Easy, effective at casual level. Falls off vs experienced players.'},
+      {name:'Princess Yue', type:'Setplay / Advanced', desc:'Buffs projectiles + free recall. Terrifying setplay. Not for beginners.'},
+    ],
+  },
+  {
+    id: 'azula', num: '07', name: 'Azula', element: 'fire', elementLabel: 'Blue Fire & Lightning',
+    archetype: 'Midrange', difficulty: 2, series: 'The Last Airbender',
+    voice: 'Suzie Yeung', supports: ['Lo & Li','Joo Dee','Ursa'],
+    mechanic: 'Focused / Firelord Madness — Two stances governed by Support choice. Lo & Li: starts Focused, switches to Firelord after losing a round. Joo Dee: locked Focused. Ursa: locked Firelord (easiest character in game).',
+    playstyle: 'Two characters in one. Focused Azula: harder but more options, fire traps, harder to counter. Firelord Azula: easiest character in the game — simplified combos, massive HP, raw firepower. True to the show, Firelord Azula is beaten by being outmaneuvered.',
+    moves: {
+      'Command Normals': [
+        ['Azure Kick','6M','Overhead, Flow Cancel','—'],
+        ['Lightning Ready','6H (Hold)','Chargeable','Builds toward lightning'],
+      ],
+      'Flow Moves': [
+        ['Blue Fire Step','6F','Flow Cancel','Advancing blue fire dash'],
+        ['— Blue Strike','L','—','Quick attack'],
+        ['— Azure Burst','M','—','Slower; +on block'],
+        ['— Inferno Lance','H','—','Launcher'],
+        ['Backstep','4F','Flow Cancel','Retreating dash'],
+        ['Low Sweep','2F','Avoids Highs, Flow Cancel','Low stance'],
+        ['— Ember Breath','L','Low','—'],
+      ],
+      'Specials': [
+        ['Blue Fire Blast','236 L/M/H','—','Blue fire projectile; H=strongest'],
+        ['EX Blue Fire Blast','236+2atk','1 Energy','3 blasts in succession'],
+        ['Fire Trap','214 L/M/H','—','Places fire on ground; delays then activates'],
+        ['EX Fire Trap','214+2atk','1 Energy','Larger trap, faster activation'],
+        ['Lightning Arc','236F','1 Energy','Quick lightning bolt'],
+        ['Phoenix Rise','214H','Invulnerable','Rising blue fire DP'],
+        ['EX Phoenix Rise','214+2atk','2 Energy, Invulnerable','Multi-hit'],
+      ],
+      'Supers': [
+        ['Imperial Lightning','236 L+M+H','4 Energy','Hard Knockdown; lightning from chakra — CAN BE REDIRECTED by Aang/Zuko'],
+        ["Firelord's Lightning",'214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+      'Critical Hits': [
+        ['Perfect','Fully charged Lightning Ready hit','+1 Energy','—'],
+        ['Unhinged','(Firelord only) 3 specials in succession','+1 Energy','—'],
+      ],
+    },
+    supportDetails: [
+      {name:'Lo & Li', type:'Both Stances / Most Powerful', desc:'Starts Focused, switches to Firelord after losing a round. Widest benefits. Don\'t start here.'},
+      {name:'Joo Dee', type:'Focused Lock / Combo', desc:'Locked Focused. Least HP but big reduction in movement cancel costs. Rewards tricky offense.'},
+      {name:'Ursa', type:'Firelord Lock / Easiest', desc:'Locked Firelord Madness + big HP boost. Training wheels — eventually phase out for Lo & Li.'},
+    ],
+  },
+  {
+    id: 'zaheer', num: '08', name: 'Zaheer', element: 'air', elementLabel: 'Airbending',
+    archetype: 'All-rounder', difficulty: 2, series: 'The Legend of Korra',
+    voice: '—', supports: ['Ming Hua','P\'Li','Ghazan'],
+    mechanic: 'Flight + Red Lotus Tag Assists — Only character with on-screen tag assists. Summoning causes cooldown; if member is hit, cooldown doubles. Also has unique Flight ability via airbending.',
+    playstyle: 'Well-rounded with tools for every situation. Brings tag assists to a 1v1 game. Fast omnidirectional movement, good anti-air, can convert stray hits into damage. A simplified Aang — similar speed but easier and safer attacks.',
+    moves: {
+      'Command Normals': [
+        ['Windfall','6H','Flow Cancel','Standing axe kick; hits downed'],
+        ['Updraft','4H','Flow Cancel','Somersault launcher (self + opponent)'],
+      ],
+      'Flow Moves': [
+        ['Back Flip','4F','Avoids Lows','Quick recovery mid-jump'],
+        ['Roll','2F','Avoids Highs','—'],
+        ['Flight','(Air) F','—','Unique flight ability'],
+        ['Flight Cancel','(During Flight) F','—','—'],
+      ],
+      'Specials': [
+        ['Piercing Gust','236 L/M/H (Air OK)','High','Airbending projectile'],
+        ['— Sweeping Gust','(after Piercing Gust)','High, Element Surge','Staff sweep follow-up'],
+        ['EX Piercing Gust','236+2atk','1 Energy','Enhanced gust; longest range poke'],
+        ['Call of the Red Lotus','214 L/M/H (Air OK)','Red Lotus','Summon member (shared cooldown)'],
+        ['EX Call of the Red Lotus','214+2atk (Air OK)','2 Energy','Enhanced summon'],
+        ['Airburst','(Air) M+H','—','Aerial attack'],
+      ],
+      'Supers': [
+        ['(4 Energy Super)','TBD','4 Energy','To be determined'],
+        ["Tyrant's Demise",'214 L+M+H (Air OK)','7 Energy, Invulnerable','Hard Knockdown (ground only). Synchronized Red Lotus team attack.'],
+      ],
+      'Critical Hits': [
+        ['Untethered','P\'Li struck 3× by opponent','—','Loses Flow cost for Flight'],
+        ['United','All Red Lotus members land attack in round','+1 Energy','Once per round'],
+        ['Cunning','Airburst on grounded opponent','+1 Energy','Higher bounce'],
+        ['Agile','Evade low with forward Flow','+1 Energy','—'],
+      ],
+    },
+    supportDetails: [
+      {name:'Ming Hua', type:'Combo-Oriented', desc:'Powers Ming Hua tag specials. Water-arm combat for combo extension.'},
+      {name:'P\'Li', type:'Lockdown / Anti-Zoning', desc:'Powers P\'Li tag specials. Combustion bending for lockdown + dealing with ranged attacks.'},
+      {name:'Ghazan', type:'Mixed', desc:'Powers Ghazan tag specials. Lava bending — combo tools + offensive pressure.'},
+    ],
+  },
+  {
+    id: 'ozai', num: '09', name: 'Fire Lord Ozai', element: 'fire', elementLabel: 'Firebending',
+    archetype: 'Midrange', difficulty: 5, series: 'The Last Airbender',
+    voice: 'James Sie', supports: ['Fire Lord Sozin','Imperial Firebender','Admiral Zhao'],
+    mechanic: 'Unique Flow System — Breaks movement rules. Assist choices can LOCK/UNLOCK entire moves. "Big body" archetype. No Critical Hits except throwing Zuko (drains half his Flow, gives him +4 Redemption). Flow regenerates 3x faster at 7 Energy.',
+    playstyle: 'Playing him IS a knowledge check. Requires "reading the manual." Clunky at casual level, terrifying when mastered. Ideal for rhythm game players and methodical combo enthusiasts. Most satisfying combos in the game.',
+    moves: {
+      'Flow Moves': [
+        ['Boost (Forward)','6F','—','Unique firebending dash; enhances attacks'],
+        ['Boost (Backward)','4F','—','Enhances attacks'],
+        ['Boost (Up)','8F','—','Unique aerial dash'],
+        ['Crouching Boost','2F','—','Low approach'],
+        ['Flow Stance','F (Hold)','—','62.5 Chi/use; generates Chakra over time'],
+      ],
+      'Specials': [
+        ['Fireball','236 L/M/H','—','Fireball from first active frame; speed varies'],
+        ['Air Fireball','(Air) 236 L/M/H','—','Propels upward, fires downward; Boost-compatible'],
+        ['Fire Jet','214 L/M/H','—','Forward firebending dash attack'],
+        ['Rising Fire','623 L/M/H','Invulnerable (startup)','DP motion rising uppercut'],
+        ['Flame Pillar','22 L/M/H','—','Ground-based fire pillar'],
+        ['Lightning Strike','236F','1 Energy','Quick lightning bolt'],
+      ],
+      'Supers': [
+        ["Phoenix King's Wrath",'236 L+M+H','4 Energy','Hard Knockdown'],
+        ["Agni Kai's Finale",'214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+    },
+    supportDetails: [
+      {name:'Fire Lord Sozin', type:'Mobility / Combos', desc:'Enhances mobility + combo routes. Unique Flow boosts. Cost: less health + loses certain moves.'},
+      {name:'Imperial Firebender', type:'Easy / Full Kit', desc:'Full kit access, nothing notable. Good for learning. Slightly more defensive.'},
+      {name:'Admiral Zhao', type:'GRAPPLER Transformation', desc:'Changes entire gameplan. Enhances command grabs, +health, improves specials. Loses mobility, slower.'},
+    ],
+  },
+  {
+    id: 'kyoshi', num: '10', name: 'Kyoshi', element: 'earth', elementLabel: 'Multi-Element Avatar',
+    archetype: 'Brawler', difficulty: 3, series: 'Avatar Lore (Kyoshi Novels)',
+    voice: '—', supports: ['Rangi','Kelsang','Yun'],
+    mechanic: 'Big Body with Full Flow System — Unusual for archetype: has sprints, floats, air dash, diagonal dash. Flow regenerates 3x faster at 7 Energy. Wong\'s Finale (2H) cancelable from frame 6.',
+    playstyle: 'The roster\'s "big body" — massive damage, impressive range, full Flow system. Deceptively good at forcing guard breaks. Feast-or-famine: easy wins or crushing defeats. Exponential learning curve.',
+    moves: {
+      'Command Normals': [
+        ["Kirima's Grace",'6H','Deflect','Waterbending spin, deflects attacks'],
+        ["— Kirima's Wrath",'H (during Grace)','—','Waterbending slice; NOT Flow-cancelable'],
+        ["Jesa's Gale",'4H (Hold OK)','Chargeable','Air blast'],
+        ["Wong's Finale",'2H','Armor, Element Surge','Cancelable from frame 6; +on block'],
+      ],
+      'Flow Moves': [
+        ['Dust Step','6F','Flow Cancel','Forward movement'],
+        ['Backstep','4F','Flow Cancel','Retreating movement'],
+        ['Flow Stance','F (Hold)','—','Regenerates Flow while holding (unique). 62.5 Chi/use.'],
+      ],
+      'Specials': [
+        ['Earth Splitter','236 L/M/H','—','Ground earthbending; launches'],
+        ['Wind Cutter','214 L/M/H','—','Airbending slash projectile'],
+        ['Rising Tide','623 L/M/H','—','Waterbending uppercut (DP)'],
+        ['Flame Burst','22 L/M/H','—','Firebending explosion'],
+      ],
+      'Supers': [
+        ["Kyoshi's Judgment",'236 L+M+H','4 Energy','Hard Knockdown'],
+        ['Avatar Kyoshi','214 L+M+H','7 Energy, Invulnerable','Hard Knockdown'],
+      ],
+    },
+    supportDetails: [
+      {name:'Rangi', type:'Simple / Beginner', desc:'Enhances 236 follow-ups. Simple, effective, good for beginners. Great harassment.'},
+      {name:'Kelsang', type:'Air Enhancement', desc:'Air Flow → double jump. Improves air cancels. More juggling power.'},
+      {name:'Yun', type:'Launcher / Pressure', desc:'Empowers 214 specials. Higher launch for corner combos. Cancelable partway for pressure.'},
+    ],
+  },
+  {
+    id: 'asa', num: '11', name: 'Avatar State Aang', element: 'spirit', elementLabel: 'All Elements (Avatar State)',
+    archetype: 'Zoner', difficulty: 5, series: 'The Last Airbender',
+    voice: 'Da-Ni Lin', supports: ['Katara','Roku','Guru Pathik'],
+    mechanic: 'If Aang is Ryu, Avatar State Aang is Evil Ryu. Retains mobility focus but needs deliberation. Zoner archetype — controls entire battle space with attacks at unique angles.',
+    playstyle: 'Potentially the hardest character in the game. Not as limber as regular Aang. Needs composure to recover advantageous position after losing it. Smallest HP pool. Requires mastery of both offense and defense.',
+    moves: {
+      'Normals & Specials (from SuperCombo)': [
+        ['5A / 5B / 5C','Standing normals','—','Light/Medium/Heavy'],
+        ['2A / 2B / 2C','Crouching normals','—','Light/Medium/Heavy'],
+        ['j.A / j.B / j.C','Jumping normals','—','Light/Medium/Heavy'],
+        ['Tornado Shot','A+D','—','Elemental projectile'],
+        ['Fire Fist','6B','—','Firebending strike'],
+        ['Tornado Shot','6C','—','Enhanced projectile'],
+        ['Fire Fist (Air)','j.6B','—','Aerial fire strike'],
+        ['Frigid Snap','j.6C','—','Ice attack'],
+        ['Fire Fist (Air)','j.2B','—','Downward aerial fire'],
+      ],
+    },
+    supportDetails: [
+      {name:'Katara', type:'Freeze / Healing / Easy', desc:'Waterbending freezes opponent. Small heal. Easy choice for a hard character.'},
+      {name:'Roku', type:'Fire Power / Easy', desc:'Empowers fire attacks. Creates damaging fire pools. Doesn\'t directly help zoning plan.'},
+      {name:'Guru Pathik', type:'Maneuverability / Hardest', desc:'Greater maneuverability for omnidirectional moves. New combos via cancellable movement. Most versatile.'},
+    ],
+  },
+  {
+    id: 'ask', num: '12', name: 'Nightmare Korra', element: 'spirit', elementLabel: 'All Elements (Dark Spirit)',
+    archetype: 'Rushdown', difficulty: 4, series: 'The Legend of Korra',
+    voice: '—', supports: ['Vaatu','Dark Avatar Unalaq','Dark Spirit'],
+    mechanic: '236X specials cancellable into Flow movement on hit, block, or during recovery frames (unique). Dashes have invulnerability periods. Can phase through opponents.',
+    playstyle: 'Evil Korra. Loses all intuitive movement — controls feel incredibly stiff, like moving underwater. But gains absurd utility. Worst mashing character. Must visualize actions before committing. Higher skill floor, easier kit once mastered.',
+    moves: {
+      'Key Properties (from SuperCombo)': [
+        ['236X → Flow Cancel','236X on hit/block/recovery','—','Unique: cancellable into Flow movement anytime'],
+        ['Invulnerable Dashes','Dash','Invulnerable (brief)','Short invulnerability periods'],
+        ['Phase Through','Dash through opponent','—','Breaks defense by crossing through'],
+        ['High Damage Specials','Various','—','Absurd utility per move'],
+      ],
+    },
+    supportDetails: [
+      {name:'Vaatu', type:'Flow Cancel / Hardest', desc:'236X → Flow movement. Enhances pressure + unique combos. Hardest to utilize.'},
+      {name:'Dark Avatar Unalaq', type:'EX Abuse / Straightforward', desc:'Enhances 236X when no Spirit resources. Abuse EX specials to maximize.'},
+      {name:'Dark Spirit', type:'Chip Damage / EASIEST IN GAME', desc:'Adds chip damage to EVERYTHING. Effective at all skill levels.'},
+    ],
+  },
+];
+
+// Element icons (emoji)
+const elementIcons = {
+  air: '🌀', water: '🌊', earth: '⛰️', fire: '🔥', spirit: '✨', nonbender: '⚔️'
+};
+
+// ── Render roster grid ──
+function renderRoster() {
+  const grid = document.getElementById('rosterGrid');
+  grid.innerHTML = characters.map(c => `
+    <div class="character-card" data-element="${c.element}" onclick="selectCharacter('${c.id}')">
+      <div class="character-number">${c.num}</div>
+      <div class="character-emblem" data-element="${c.element}">${elementIcons[c.element]}</div>
+      <div class="character-name">${c.name}</div>
+      <div class="character-element-label">${c.elementLabel}</div>
+      <div class="character-archetype">${c.archetype}</div>
+      <div class="character-difficulty">
+        Complexity <span class="stars">${'★'.repeat(c.difficulty)}${'☆'.repeat(5-c.difficulty)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Render character detail ──
+function selectCharacter(id) {
+  const c = characters.find(ch => ch.id === id);
+  if (!c) return;
+
+  // Update active card
+  document.querySelectorAll('.character-card').forEach(card => card.classList.remove('active'));
+  document.querySelector(`.character-card[onclick="selectCharacter('${id}')"]`)?.classList.add('active');
+
+  const detail = document.getElementById('characterDetail');
+
+  // Build move tables
+  let movesHTML = '';
+  let isFirst = true;
+  for (const [category, moves] of Object.entries(c.moves)) {
+    movesHTML += `
+      <div class="move-list">
+        <div class="move-list-title">${category}</div>
+        <table class="move-table">
+          <thead>
+            <tr>
+              <th style="width: 25%">Move</th>
+              <th style="width: 20%">Input</th>
+              <th style="width: 20%">Properties</th>
+              <th style="width: 35%">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${moves.map(m => {
+              const props = (m[2] || '').split(/[,;]/).map(p => {
+                let cls = 'default';
+                const t = p.trim().toLowerCase();
+                if (t.includes('overhead')) cls = 'overhead';
+                else if (t.includes('low')) cls = 'low';
+                else if (t.includes('invuln')) cls = 'invuln';
+                else if (t.includes('energy') || t.includes('ex')) cls = 'ex';
+                else if (t.includes('super') || t.includes('7 energy') || t.includes('4 energy')) cls = 'super';
+                return `<span class="prop-badge ${cls}">${p.trim()}</span>`;
+              }).join('');
+              return `
+                <tr>
+                  <td class="move-name">${m[0]}</td>
+                  <td class="move-input">${m[1]}</td>
+                  <td><div class="move-props">${props || '<span class="prop-badge default">—</span>'}</div></td>
+                  <td class="move-desc">${m[3] || ''}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  detail.innerHTML = `
+    <div class="detail-header" data-element="${c.element}">
+      <div class="detail-header-content">
+        <div class="detail-emblem" data-element="${c.element}">${elementIcons[c.element]}</div>
+        <div class="detail-info">
+          <div class="detail-name">${c.name}</div>
+          <div class="detail-meta">
+            <div class="detail-meta-item">
+              <span class="detail-meta-label">Series:</span> ${c.series}
+            </div>
+            ${c.voice && c.voice !== '—' ? `<div class="detail-meta-item"><span class="detail-meta-label">Voice:</span> ${c.voice}</div>` : ''}
+            <div class="detail-meta-item">
+              <span class="detail-meta-label">Element:</span> ${c.elementLabel}
+            </div>
+            <div class="detail-meta-item">
+              <span class="detail-meta-label">Supports:</span> ${c.supports.join(', ')}
+            </div>
+          </div>
+          <div class="detail-tags">
+            <span class="detail-tag">${c.archetype}</span>
+            <span class="detail-tag">Complexity ${'★'.repeat(c.difficulty)}${'☆'.repeat(5-c.difficulty)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-tabs">
+        <button class="detail-tab active" onclick="switchTab(event, 'moves-${c.id}')">Moves & Frame Data</button>
+        <button class="detail-tab" onclick="switchTab(event, 'supports-${c.id}')">Supports</button>
+        <button class="detail-tab" onclick="switchTab(event, 'info-${c.id}')">Playstyle & Mechanic</button>
+      </div>
+
+      <div id="moves-${c.id}" class="tab-content active">
+        ${movesHTML}
+      </div>
+
+      <div id="supports-${c.id}" class="tab-content">
+        <div class="support-grid">
+          ${c.supportDetails.map(s => `
+            <div class="support-card">
+              <div class="support-name">${s.name}</div>
+              <div class="support-type">${s.type}</div>
+              <div class="support-desc">${s.desc}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div id="info-${c.id}" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <div class="move-list-title">Character Mechanic</div>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">${c.mechanic}</p>
+        </div>
+        <div>
+          <div class="move-list-title">Playstyle</div>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">${c.playstyle}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  detail.classList.add('active', 'fade-in');
+  detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Tab switching ──
+function switchTab(evt, tabId) {
+  const tabs = evt.target.parentElement.querySelectorAll('.detail-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  evt.target.classList.add('active');
+
+  const detail = evt.target.closest('.character-detail');
+  detail.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// ── Navigation ──
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Nav active state on scroll ──
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = ['overview', 'mechanics', 'roster', 'framedata', 'editions'];
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 100) current = id;
+  });
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.textContent.toLowerCase() === current ||
+      (current === 'roster' && link.textContent.toLowerCase() === 'roster'));
+  });
+});
+
+// ── Initialize ──
+renderRoster();
+
+// ── Auto-select first character ──
+setTimeout(() => selectCharacter('aang'), 500);
+</script>
