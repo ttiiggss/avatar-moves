@@ -118,6 +118,49 @@ body { font-family: var(--font-body); background: var(--bg-deep); color: var(--t
 .key-guide-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); }
 .key-cap { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; border-radius: 5px; background: var(--bg-elevated); border: 1px solid var(--border-light); font-family: var(--font-mono); font-weight: 600; font-size: 0.75rem; color: var(--text-primary); padding: 0 6px; }
 
+/* GAMEPAD */
+.gamepad-status {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.6rem 1.2rem; margin-bottom: 1.5rem;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border-light);
+  border-radius: 8px; font-size: 0.8rem; color: var(--text-muted);
+  transition: all 0.3s;
+}
+.gamepad-status.connected {
+  border-color: #4caf50; color: #4caf50;
+  box-shadow: 0 0 12px rgba(76,175,80,0.15);
+}
+.gamepad-status .gp-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #555; transition: background 0.3s;
+}
+.gamepad-status.connected .gp-dot {
+  background: #4caf50; box-shadow: 0 0 6px #4caf50;
+}
+.gamepad-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  font-family: var(--font-mono); font-weight: 600; font-size: 0.7rem;
+  color: var(--text-primary); padding: 0 5px;
+  transition: all 0.15s;
+}
+.gamepad-btn.pressed {
+  background: var(--gold-bright); color: #0a0a0f;
+  border-color: var(--gold-bright); transform: scale(0.92);
+}
+.gamepad-mapping {
+  display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center;
+  margin-top: 0.5rem; font-size: 0.72rem; color: var(--text-muted);
+}
+.gamepad-mapping-item { display: flex; align-items: center; gap: 0.3rem; }
+.gamepad-vibrate { animation: gpVibrate 0.08s ease-in-out; }
+@keyframes gpVibrate {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
 /* COMBO INFO */
 .combo-info { padding: 1.5rem 2rem; background: var(--bg-dark); border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
 .combo-info strong { color: var(--gold-bright); }
@@ -206,6 +249,24 @@ body { font-family: var(--font-body); background: var(--bg-deep); color: var(--t
     <div class="key-guide-item"><span class="key-cap">Space</span> Super</div>
     <div class="key-guide-item"><span class="key-cap">R</span> Command (6)</div>
     <div class="key-guide-item"><span class="key-cap">T</span> Command (2)</div>
+  </div>
+
+  <!-- GAMEPAD STATUS -->
+  <div id="gamepadStatus" class="gamepad-status">
+    <span class="gp-dot"></span>
+    <span id="gpLabel">No controller detected — plug in and press any button</span>
+  </div>
+  <div id="gamepadMapping" class="gamepad-mapping" style="display:none;">
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="0">✕</span> Light</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="3">△</span> Medium</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="1">○</span> Heavy</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="4">R1</span> Flow</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="5">L1</span> Special ⤵↘</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="7">R2</span> Special ⤴↙</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="6">L2</span> Jump Cancel</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="12">⬇↘</span> Cmd (6)</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="13">⬇↙</span> Cmd (2)</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="9">▶▶</span> Super</div>
   </div>
 
   <!-- CHARACTER FILTER -->
@@ -1416,6 +1477,126 @@ function showFeedback(text, type) {
     if (el.textContent === text) el.classList.remove('show');
   }, 600);
 }
+
+// ═══ GAMEPAD SYSTEM ═══
+const GP = {
+  connected: false,
+  index: null,
+  prevButtons: new Set(),
+  rafId: null,
+  // Button index → keyboard key mapping (standard layout: ✕/△/○/□ = 0/3/1/2, R1/R2/L1/L2 = 4/5/7/6, D-pad = 12-15, Start = 9)
+  // Default: PlayStation/Xbox layout
+  btnMap: {
+    0: 'a',   // ✕ / A (Light)
+    3: 's',   // △ / Y (Medium)
+    1: 'd',   // ○ / B (Heavy)
+    4: 'f',   // R1 (Flow)
+    5: 'q',   // L1 (Special 236)
+    7: 'e',   // R2 (Special 214)
+    6: 'w',   // L2 (Jump Cancel)
+    9: ' ',   // Start (Super)
+    12: 'r',  // D-pad Down → Command (6/fwd)
+    13: 't',  // D-pad Right → Command (2/crouch)
+  },
+  // Track analog stick for direction + button combos
+  stickThreshold: 0.5,
+  lastSpecialDir: null, // tracks QCF/QCB direction state
+};
+
+function gpConnect(e) {
+  GP.index = e.gamepad.index;
+  GP.connected = true;
+  document.getElementById('gamepadStatus').classList.add('connected');
+  document.getElementById('gpLabel').textContent = `Controller connected: ${e.gamepad.id.substring(0, 40)}`;
+  document.getElementById('gamepadMapping').style.display = 'flex';
+  if (!GP.rafId) gpPoll();
+}
+
+function gpDisconnect(e) {
+  if (e.gamepad.index === GP.index) {
+    GP.connected = false;
+    GP.index = null;
+    GP.prevButtons.clear();
+    if (GP.rafId) { cancelAnimationFrame(GP.rafId); GP.rafId = null; }
+    document.getElementById('gamepadStatus').classList.remove('connected');
+    document.getElementById('gpLabel').textContent = 'No controller detected — plug in and press any button';
+    document.getElementById('gamepadMapping').style.display = 'none';
+  }
+}
+
+function gpPoll() {
+  GP.rafId = requestAnimationFrame(gpPoll);
+  const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gamepads[GP.index];
+  if (!gp) return;
+
+  const currentButtons = new Set();
+
+  // Check face buttons, bumpers, triggers, d-pad
+  for (const [btnIdx, key] of Object.entries(GP.btnMap)) {
+    const pressed = gp.buttons[parseInt(btnIdx)] && gp.buttons[parseInt(btnIdx)].pressed;
+    const btn = document.querySelector(`.gamepad-btn[data-gp="${btnIdx}"]`);
+
+    if (pressed) {
+      currentButtons.add(btnIdx);
+      if (btn) btn.classList.add('pressed');
+      // Only fire on press (not hold) — emulate keydown
+      if (!GP.prevButtons.has(btnIdx)) {
+        // Dispatch as keyboard event so handleKey picks it up
+        const evt = new KeyboardEvent('keydown', {
+          key: key === ' ' ? ' ' : key,
+          code: key === ' ' ? 'Space' : 'Key' + key.toUpperCase(),
+          bubbles: true
+        });
+        document.dispatchEvent(evt);
+
+        // Visual feedback vibrate
+        const status = document.getElementById('gamepadStatus');
+        status.classList.remove('gamepad-vibrate');
+        void status.offsetWidth; // force reflow
+        status.classList.add('gamepad-vibrate');
+      }
+    } else {
+      if (btn) btn.classList.remove('pressed');
+    }
+  }
+
+  // Analog stick fallback for D-pad functions
+  const ax = gp.axes[0] || 0;
+  const ay = gp.axes[1] || 0;
+  if (Math.abs(ax) > GP.stickThreshold || Math.abs(ay) > GP.stickThreshold) {
+    // Map stick to D-pad: down=2(crouch/t), right=6(cmd/r)
+    if (ay > GP.stickThreshold && !GP.prevButtons.has('stick_down')) {
+      currentButtons.add('stick_down');
+      const evt = new KeyboardEvent('keydown', { key: 't', code: 'KeyT', bubbles: true });
+      document.dispatchEvent(evt);
+    }
+    if (ax > GP.stickThreshold && !GP.prevButtons.has('stick_right')) {
+      currentButtons.add('stick_right');
+      const evt = new KeyboardEvent('keydown', { key: 'r', code: 'KeyR', bubbles: true });
+      document.dispatchEvent(evt);
+    }
+  }
+
+  GP.prevButtons = currentButtons;
+}
+
+// Listen for gamepad connect/disconnect
+window.addEventListener('gamepadconnected', gpConnect);
+window.addEventListener('gamepaddisconnected', gpDisconnect);
+
+// Also check on first interaction (some browsers don't fire the event until user gesture)
+document.addEventListener('keydown', () => {
+  if (!GP.connected) {
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const gp of gamepads) {
+      if (gp) {
+        gpConnect({ gamepad: gp });
+        break;
+      }
+    }
+  }
+}, { once: true });
 
 // ═══ INIT ═══
 document.addEventListener('keydown', handleKey);
