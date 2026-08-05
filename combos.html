@@ -392,7 +392,10 @@ body { font-family: var(--font-body); background: var(--bg-deep); color: var(--t
   </p>
 </footer>
 
+<script src="js/error-utils.js"></script>
 <script>
+const { requireEl, optionalEl, report, warn, runStep, wrap } = AvatarErrors;
+
 // ═══════════════════════════════════════════════════════
 // COMBO DATA
 // Each step: { key: keyboard key, label: display, type: for coloring, input: game notation }
@@ -1141,14 +1144,19 @@ let activeCharFilter = 'all';
 
 // ═══ CHARACTER FILTER ═══
 function filterChar(charName) {
+  // Filter visible combos
+  const filtered = combos.filter(c => charName === 'all' || c.char === charName);
+  if (filtered.length === 0) {
+    warn('filterChar', `no combos exist for "${charName}"; keeping previous filter`);
+    showFeedback('NO COMBOS', 'miss');
+    return;
+  }
+
   activeCharFilter = charName;
   // Update filter pill styling
   document.querySelectorAll('#charFilter .combo-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.char === charName);
   });
-  // Filter visible combos
-  const filtered = combos.filter(c => charName === 'all' || c.char === charName);
-  if (filtered.length === 0) return;
   // Find the combo in the main array
   currentComboIdx = combos.indexOf(filtered[0]);
   resetCombo();
@@ -1160,8 +1168,15 @@ function getFilteredCombos() {
 }
 
 // ═══ RENDER COMBO SELECTOR ═══
+// Reads the combo at an index, failing loudly if the index is out of range.
+function currentCombo() {
+  const combo = combos[currentComboIdx];
+  if (!combo) throw new Error(`no combo at index ${currentComboIdx} (${combos.length} combos loaded)`);
+  return combo;
+}
+
 function renderSelector() {
-  const el = document.getElementById('comboSelector');
+  const el = requireEl('comboSelector');
   const filtered = getFilteredCombos();
   el.innerHTML = filtered.map(c => {
     const i = combos.indexOf(c);
@@ -1173,7 +1188,7 @@ function renderSelector() {
 
 // ═══ RENDER PROGRESS DOTS ═══
 function renderProgress() {
-  const el = document.getElementById('progressRow');
+  const el = requireEl('progressRow');
   const filtered = getFilteredCombos();
   el.innerHTML = filtered.map(c => {
     const i = combos.indexOf(c);
@@ -1186,7 +1201,7 @@ function renderProgress() {
 
 // ═══ RENDER COMBO REFERENCE TABLE ═══
 function renderRefTable() {
-  const el = document.getElementById('comboRefBody');
+  const el = requireEl('comboRefBody');
   el.innerHTML = combos.map((c, i) => `
     <tr style="${activeCharFilter !== 'all' && c.char !== activeCharFilter ? 'opacity:0.3' : ''}">
       <td style="font-family:var(--font-mono);color:var(--text-muted);">${String(i+1).padStart(2,'0')}</td>
@@ -1200,8 +1215,8 @@ function renderRefTable() {
 
 // ═══ RENDER COMBO SEQUENCE DISPLAY ═══
 function renderSequence() {
-  const combo = combos[currentComboIdx];
-  const el = document.getElementById('comboSequence');
+  const combo = currentCombo();
+  const el = requireEl('comboSequence');
   el.innerHTML = combo.steps.map((s, i) => {
     let state = 'pending';
     if (i < currentStep) state = 'hit';
@@ -1217,15 +1232,17 @@ function renderSequence() {
 
 // ═══ LOAD COMBO INFO ═══
 function loadCombo() {
-  const c = combos[currentComboIdx];
-  document.getElementById('comboName').textContent = c.name;
-  document.getElementById('comboChar').textContent = `${c.char} · ${c.diffLabel} · ${c.steps.length} inputs`;
+  const c = currentCombo();
+  const nameEl = requireEl('comboName');
+  nameEl.textContent = c.name;
+  requireEl('comboChar').textContent = `${c.char} · ${c.diffLabel} · ${c.steps.length} inputs`;
 
   // Set element color on name
   const colors = { air:'var(--air)', water:'var(--water)', fire:'var(--fire)', earth:'var(--earth)', spirit:'var(--spirit)' };
-  document.getElementById('comboName').style.color = colors[c.element] || 'var(--text-primary)';
+  if (!colors[c.element]) warn('loadCombo', `combo "${c.name}" has unknown element "${c.element}"`);
+  nameEl.style.color = colors[c.element] || 'var(--text-primary)';
 
-  document.getElementById('comboInfo').innerHTML = `
+  requireEl('comboInfo').innerHTML = `
     <strong>${c.notation}</strong>
     <div class="combo-notation">${c.notation}</div>
     ${c.desc}
@@ -1246,9 +1263,9 @@ function resetStats() {
 }
 
 function updateStatsDisplay() {
-  document.getElementById('statHits').textContent = stats.hits;
-  document.getElementById('statStreak').textContent = stats.streak;
-  document.getElementById('statBest').textContent = stats.maxStreak;
+  requireEl('statHits').textContent = stats.hits;
+  requireEl('statStreak').textContent = stats.streak;
+  requireEl('statBest').textContent = stats.maxStreak;
 }
 
 // ═══ START / RESET ═══
@@ -1257,8 +1274,8 @@ function startCombo() {
   isActive = true;
   resetStats();
   renderSequence();
-  document.getElementById('btnStart').textContent = 'Restart';
-  document.getElementById('timingContainer').style.display = 'block';
+  requireEl('btnStart').textContent = 'Restart';
+  requireEl('timingContainer').style.display = 'block';
   stepStartTime = performance.now();
   startTimingLoop();
   showFeedback('', '');
@@ -1268,14 +1285,18 @@ function resetCombo() {
   isActive = false;
   currentStep = 0;
   if (timingRaf) cancelAnimationFrame(timingRaf);
-  document.getElementById('btnStart').textContent = 'Start Combo';
-  document.getElementById('timingContainer').style.display = 'none';
+  requireEl('btnStart').textContent = 'Start Combo';
+  requireEl('timingContainer').style.display = 'none';
   renderSequence();
   resetStats();
   showFeedback('', '');
 }
 
 function selectCombo(i) {
+  if (!combos[i]) {
+    report('selectCombo', new Error(`combo index ${i} does not exist`));
+    return;
+  }
   currentComboIdx = i;
   resetCombo();
   loadCombo();
@@ -1302,14 +1323,14 @@ function nextCombo() {
 // ═══ TIMING LOOP ═══
 function startTimingLoop() {
   if (!isActive) return;
-  const combo = combos[currentComboIdx];
+  const combo = currentCombo();
   const elapsed = performance.now() - stepStartTime;
   const progress = Math.min(elapsed / combo.timingMs, 1);
 
   // Update timing bar
-  const indicator = document.getElementById('timingIndicator');
-  const window = document.getElementById('timingWindow');
-  const perfect = document.getElementById('timingPerfect');
+  const indicator = requireEl('timingIndicator');
+  const window = requireEl('timingWindow');
+  const perfect = requireEl('timingPerfect');
 
   // Indicator sweeps left to right
   indicator.style.left = (progress * 100) + '%';
@@ -1328,7 +1349,7 @@ function startTimingLoop() {
     return;
   }
 
-  timingRaf = requestAnimationFrame(startTimingLoop);
+  timingRaf = requestAnimationFrame(wrap('timing loop', startTimingLoop));
 }
 
 // ═══ KEY HANDLING ═══
@@ -1338,14 +1359,20 @@ function handleKey(e) {
     return;
   }
 
-  const combo = combos[currentComboIdx];
-  const expected = combo.steps[currentStep];
+  const combo = currentCombo();
   const key = e.key.toLowerCase();
 
   if (key === 'escape') { resetCombo(); return; }
 
   // Prevent key repeat
   if (e.repeat) return;
+
+  const expected = combo.steps[currentStep];
+  if (!expected) {
+    report('handleKey', new Error(`step ${currentStep} is out of range for "${combo.name}"`));
+    resetCombo();
+    return;
+  }
 
   const elapsed = performance.now() - stepStartTime;
   const progress = elapsed / combo.timingMs;
@@ -1369,7 +1396,7 @@ function handleKey(e) {
 }
 
 function handleHit(quality) {
-  const combo = combos[currentComboIdx];
+  const combo = currentCombo();
 
   stats.hits++;
   stats.streak++;
@@ -1413,14 +1440,14 @@ function handleMiss() {
   updateStatsDisplay();
 
   // Brief pause then reset to current step
-  setTimeout(() => {
+  setTimeout(wrap('miss recovery', () => {
     if (node) {
       node.classList.remove('miss');
       node.classList.add('current');
     }
     stepStartTime = performance.now();
     startTimingLoop();
-  }, 500);
+  }, 500));
 }
 
 function updateStepDisplay() {
@@ -1434,13 +1461,20 @@ function updateStepDisplay() {
 function completeCombo() {
   isActive = false;
   if (timingRaf) cancelAnimationFrame(timingRaf);
-  document.getElementById('timingContainer').style.display = 'none';
+  requireEl('timingContainer').style.display = 'none';
 
   showFeedback('COMPLETE!', 'complete');
   completedCombos.add(currentComboIdx);
 
-  const accuracy = stats.hits / (stats.hits + stats.misses);
-  const perfectRate = stats.perfects / combos[currentComboIdx].steps.length;
+  const combo = currentCombo();
+  const attempts = stats.hits + stats.misses;
+  const stepCount = combo.steps.length;
+  if (attempts === 0 || stepCount === 0) {
+    report('completeCombo', new Error(`cannot grade "${combo.name}": ${attempts} inputs recorded over ${stepCount} steps`));
+    return;
+  }
+  const accuracy = stats.hits / attempts;
+  const perfectRate = stats.perfects / stepCount;
 
   let grade = 'C';
   let gradeCls = 'C';
@@ -1448,27 +1482,29 @@ function completeCombo() {
   else if (perfectRate >= 0.5 && stats.misses === 0) { grade = 'A'; gradeCls = 'A'; }
   else if (stats.misses <= 1) { grade = 'B'; gradeCls = 'B'; }
 
-  setTimeout(() => {
-    document.getElementById('resultsTitle').textContent = combos[currentComboIdx].name + ' Complete!';
-    document.getElementById('resultsGrade').textContent = grade;
-    document.getElementById('resultsGrade').className = 'results-grade ' + gradeCls;
-    document.getElementById('resAccuracy').textContent = Math.round(accuracy * 100) + '%';
-    document.getElementById('resPerfects').textContent = stats.perfects + '/' + combos[currentComboIdx].steps.length;
-    document.getElementById('resMaxStreak').textContent = stats.maxStreak;
-    document.getElementById('resultsOverlay').classList.add('active');
-  }, 800);
+  setTimeout(wrap('show results', () => {
+    requireEl('resultsTitle').textContent = combo.name + ' Complete!';
+    const gradeEl = requireEl('resultsGrade');
+    gradeEl.textContent = grade;
+    gradeEl.className = 'results-grade ' + gradeCls;
+    requireEl('resAccuracy').textContent = Math.round(accuracy * 100) + '%';
+    requireEl('resPerfects').textContent = stats.perfects + '/' + stepCount;
+    requireEl('resMaxStreak').textContent = stats.maxStreak;
+    requireEl('resultsOverlay').classList.add('active');
+  }), 800);
 
   renderSelector();
   renderProgress();
 }
 
 function closeResults() {
-  document.getElementById('resultsOverlay').classList.remove('active');
+  requireEl('resultsOverlay').classList.remove('active');
 }
 
 // ═══ FEEDBACK ═══
 function showFeedback(text, type) {
-  const el = document.getElementById('feedback');
+  const el = optionalEl('feedback', 'showFeedback');
+  if (!el) return;
   el.textContent = text;
   el.className = 'feedback ' + type;
   if (text) el.classList.add('show');
@@ -1506,9 +1542,9 @@ const GP = {
 function gpConnect(e) {
   GP.index = e.gamepad.index;
   GP.connected = true;
-  document.getElementById('gamepadStatus').classList.add('connected');
-  document.getElementById('gpLabel').textContent = `Controller connected: ${e.gamepad.id.substring(0, 40)}`;
-  document.getElementById('gamepadMapping').style.display = 'flex';
+  requireEl('gamepadStatus').classList.add('connected');
+  requireEl('gpLabel').textContent = `Controller connected: ${e.gamepad.id.substring(0, 40)}`;
+  requireEl('gamepadMapping').style.display = 'flex';
   if (!GP.rafId) gpPoll();
 }
 
@@ -1518,17 +1554,38 @@ function gpDisconnect(e) {
     GP.index = null;
     GP.prevButtons.clear();
     if (GP.rafId) { cancelAnimationFrame(GP.rafId); GP.rafId = null; }
-    document.getElementById('gamepadStatus').classList.remove('connected');
-    document.getElementById('gpLabel').textContent = 'No controller detected — plug in and press any button';
-    document.getElementById('gamepadMapping').style.display = 'none';
+    requireEl('gamepadStatus').classList.remove('connected');
+    requireEl('gpLabel').textContent = 'No controller detected — plug in and press any button';
+    requireEl('gamepadMapping').style.display = 'none';
+  }
+}
+
+function readGamepads() {
+  if (!navigator.getGamepads) {
+    warn('gamepad', 'Gamepad API unavailable in this browser; controller input disabled');
+    return [];
+  }
+  try {
+    return navigator.getGamepads() || [];
+  } catch (err) {
+    // e.g. blocked by permissions policy — surface it rather than silently ignoring controllers.
+    report('gamepad polling', err);
+    return [];
   }
 }
 
 function gpPoll() {
-  GP.rafId = requestAnimationFrame(gpPoll);
-  const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+  GP.rafId = requestAnimationFrame(wrap('gamepad poll', gpPoll));
+  const gamepads = readGamepads();
   const gp = gamepads[GP.index];
-  if (!gp) return;
+  if (!gp) {
+    // The pad vanished without a disconnect event; stop polling and reset the UI.
+    if (GP.connected) {
+      warn('gamepad', `controller ${GP.index} disappeared without a disconnect event`);
+      gpDisconnect({ gamepad: { index: GP.index } });
+    }
+    return;
+  }
 
   const currentButtons = new Set();
 
@@ -1551,7 +1608,7 @@ function gpPoll() {
         document.dispatchEvent(evt);
 
         // Visual feedback vibrate
-        const status = document.getElementById('gamepadStatus');
+        const status = requireEl('gamepadStatus');
         status.classList.remove('gamepad-vibrate');
         void status.offsetWidth; // force reflow
         status.classList.add('gamepad-vibrate');
@@ -1582,13 +1639,13 @@ function gpPoll() {
 }
 
 // Listen for gamepad connect/disconnect
-window.addEventListener('gamepadconnected', gpConnect);
-window.addEventListener('gamepaddisconnected', gpDisconnect);
+window.addEventListener('gamepadconnected', wrap('gamepadconnected', gpConnect));
+window.addEventListener('gamepaddisconnected', wrap('gamepaddisconnected', gpDisconnect));
 
 // Also check on first interaction (some browsers don't fire the event until user gesture)
 document.addEventListener('keydown', () => {
   if (!GP.connected) {
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const gamepads = readGamepads();
     for (const gp of gamepads) {
       if (gp) {
         gpConnect({ gamepad: gp });
@@ -1599,15 +1656,19 @@ document.addEventListener('keydown', () => {
 }, { once: true });
 
 // ═══ INIT ═══
-document.addEventListener('keydown', handleKey);
-document.getElementById('resultsOverlay').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeResults();
+// Each step is independent: a failure is reported instead of aborting the rest
+// of initialization without a trace.
+document.addEventListener('keydown', wrap('key handling', handleKey));
+runStep('results overlay wiring', () => {
+  requireEl('resultsOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeResults();
+  });
 });
 
-renderSelector();
-renderProgress();
-renderRefTable();
-loadCombo();
+runStep('render combo selector', renderSelector);
+runStep('render progress', renderProgress);
+runStep('render reference table', renderRefTable);
+runStep('load combo', loadCombo);
 </script>
 
 </body>

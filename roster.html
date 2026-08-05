@@ -688,7 +688,10 @@ body {
 </footer>
 
 <!-- CHARACTER DATA & LOGIC -->
+<script src="js/error-utils.js"></script>
 <script>
+const { requireEl, report, warn, runStep } = AvatarErrors;
+
 const characters = [
   {
     id: 'aang', num: '01', name: 'Aang', element: 'air', elementLabel: 'Airbending',
@@ -1220,12 +1223,13 @@ const elementIcons = {
 
 // ── Render roster grid ──
 function renderRoster(filter = 'all') {
-  const grid = document.getElementById('rosterGrid');
+  const grid = requireEl('rosterGrid');
   const filtered = filter === 'all' ? characters : characters.filter(c => c.element === filter);
+  if (filtered.length === 0) warn('renderRoster', `no characters match filter "${filter}"`);
 
   grid.innerHTML = filtered.map(c => {
     const portraitHTML = c.portrait
-      ? `<img class="fighter-portrait" src="${c.portrait}" alt="${c.name}" onerror="this.style.display='none'">`
+      ? `<img class="fighter-portrait" src="${c.portrait}" alt="${c.name}" onerror="AvatarErrors.handleImageError(this)">`
       : `<div style="font-size:6rem;position:relative;z-index:2;filter:drop-shadow(0 4px 20px rgba(0,0,0,0.5));">${elementIcons[c.element]}</div>`;
 
     return `
@@ -1259,10 +1263,13 @@ function renderRoster(filter = 'all') {
 // ── Open detail modal ──
 function openDetail(id) {
   const c = characters.find(ch => ch.id === id);
-  if (!c) return;
+  if (!c) {
+    report('openDetail', new Error(`no character with id "${id}"`));
+    return;
+  }
 
   const portraitHTML = c.portrait
-    ? `<img class="detail-banner-portrait" src="${c.portrait}" alt="${c.name}" onerror="this.style.display='none'">`
+    ? `<img class="detail-banner-portrait" src="${c.portrait}" alt="${c.name}" onerror="AvatarErrors.handleImageError(this)">`
     : '';
 
   let movesHTML = '';
@@ -1292,7 +1299,7 @@ function openDetail(id) {
     `;
   }
 
-  const modal = document.getElementById('detailModal');
+  const modal = requireEl('detailModal');
   modal.innerHTML = `
     <button class="detail-close" onclick="closeDetail()">✕</button>
     <div class="detail-banner" data-element="${c.element}">
@@ -1338,21 +1345,22 @@ function openDetail(id) {
     </div>
   `;
 
-  document.getElementById('detailOverlay').classList.add('active');
+  requireEl('detailOverlay').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
 function closeDetail() {
-  document.getElementById('detailOverlay').classList.remove('active');
+  requireEl('detailOverlay').classList.remove('active');
   document.body.style.overflow = '';
 }
 
 function switchTab(evt, tabId) {
+  const panel = requireEl(tabId);
   const tabs = evt.target.parentElement.querySelectorAll('.detail-tab');
   tabs.forEach(t => t.classList.remove('active'));
   evt.target.classList.add('active');
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
+  panel.classList.add('active');
 }
 
 // ── Filter buttons ──
@@ -1365,8 +1373,10 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 // ── Close modal on overlay click ──
-document.getElementById('detailOverlay').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeDetail();
+runStep('overlay wiring', () => {
+  requireEl('detailOverlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeDetail();
+  });
 });
 
 // ── ESC to close ──
@@ -1375,7 +1385,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── Init ──
-renderRoster();
+runStep('render roster', () => renderRoster());
 </script>
 
 </body>
