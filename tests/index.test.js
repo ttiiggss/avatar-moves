@@ -233,6 +233,12 @@ describe('initialisation', () => {
     await expect(loadPage('index')).rejects.toThrow(/innerHTML/);
   });
 
+  it('the load-time throw pre-empts the auto-select timer, so only one error surfaces', async () => {
+    const before = vi.getTimerCount();
+    await expect(loadPage('index')).rejects.toThrow();
+    expect(vi.getTimerCount()).toBe(before);
+  });
+
   it('auto-selects Aang shortly after load', () => {
     expect(document.getElementById('characterDetail').classList.contains('active')).toBe(false);
     vi.advanceTimersByTime(500);
