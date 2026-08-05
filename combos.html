@@ -7,27 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
 <style>
-:root {
-  --bg-deep: #0a0a0f; --bg-dark: #12121a; --bg-card: #1a1a24; --bg-elevated: #22222e;
-  --border: #2e2e3a; --border-light: #3a3a48;
-  --text-primary: #e8e6e3; --text-secondary: #a0a0a8; --text-muted: #6a6a74;
-  --gold: #d4a843; --gold-bright: #f0c548;
-  --air: #7fc4e8; --water: #4a90d9; --earth: #c4a04e; --fire: #e85d3a; --spirit: #9b6dd4;
-  --green: #4ade80; --red: #ef4444;
-  --font-display: 'Cinzel', serif; --font-body: 'Rajdhani', sans-serif; --font-mono: 'JetBrains Mono', monospace;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text-primary); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-deep); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-/* NAV */
-.nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem; }
-.nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-.nav-logo { font-family: var(--font-display); font-weight: 700; color: var(--gold); text-decoration: none; font-size: 1rem; letter-spacing: 0.1em; }
-.nav-links { display: flex; gap: 1.5rem; list-style: none; }
-.nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; transition: 0.3s; }
-.nav-link:hover, .nav-link.active { color: var(--gold-bright); }
+/* Combo trainer page-specific styles (shared: css/tokens.css, css/base.css) */
 
 /* LAYOUT */
 .container { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
