@@ -1578,7 +1578,10 @@ body {
 <!-- ═══════════════════════════════════════════════════
      JAVASCRIPT — CHARACTER DATA & INTERACTIVITY
      ═══════════════════════════════════════════════════ -->
+<script src="js/error-utils.js"></script>
 <script>
+const { requireEl, optionalEl, report, warn, runStep } = AvatarErrors;
+
 // Character data with full move lists
 const characters = [
   {
@@ -2125,8 +2128,11 @@ const elementIcons = {
 };
 
 // ── Render roster grid ──
+// The roster grid lives on roster.html; on this page the section links out
+// instead, so the container is legitimately absent.
 function renderRoster() {
-  const grid = document.getElementById('rosterGrid');
+  const grid = optionalEl('rosterGrid', 'renderRoster');
+  if (!grid) return false;
   grid.innerHTML = characters.map(c => `
     <div class="character-card" data-element="${c.element}" onclick="selectCharacter('${c.id}')">
       <div class="character-number">${c.num}</div>
@@ -2139,18 +2145,24 @@ function renderRoster() {
       </div>
     </div>
   `).join('');
+  return true;
 }
 
 // ── Render character detail ──
 function selectCharacter(id) {
   const c = characters.find(ch => ch.id === id);
-  if (!c) return;
+  if (!c) {
+    report('selectCharacter', new Error(`no character with id "${id}"`));
+    return;
+  }
 
   // Update active card
   document.querySelectorAll('.character-card').forEach(card => card.classList.remove('active'));
-  document.querySelector(`.character-card[onclick="selectCharacter('${id}')"]`)?.classList.add('active');
+  const card = document.querySelector(`.character-card[onclick="selectCharacter('${id}')"]`);
+  if (card) card.classList.add('active');
+  else warn('selectCharacter', `no roster card rendered for "${id}"`);
 
-  const detail = document.getElementById('characterDetail');
+  const detail = requireEl('characterDetail');
 
   // Build move tables
   let movesHTML = '';
@@ -2262,18 +2274,22 @@ function selectCharacter(id) {
 
 // ── Tab switching ──
 function switchTab(evt, tabId) {
+  const panel = requireEl(tabId);
+  const detail = evt.target.closest('.character-detail');
+  if (!detail) throw new Error('tab button is not inside a .character-detail container');
+
   const tabs = evt.target.parentElement.querySelectorAll('.detail-tab');
   tabs.forEach(t => t.classList.remove('active'));
   evt.target.classList.add('active');
 
-  const detail = evt.target.closest('.character-detail');
   detail.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
+  panel.classList.add('active');
 }
 
 // ── Navigation ──
 function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  const el = optionalEl(id, 'scrollToSection');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
 
 // ── Nav active state on scroll ──
@@ -2293,10 +2309,13 @@ window.addEventListener('scroll', () => {
 });
 
 // ── Initialize ──
-renderRoster();
+let rosterRendered = false;
+runStep('render roster', () => { rosterRendered = renderRoster(); });
 
 // ── Auto-select first character ──
-setTimeout(() => selectCharacter('aang'), 500);
+if (rosterRendered) {
+  setTimeout(() => runStep('auto-select first character', () => selectCharacter('aang')), 500);
+}
 </script>
 
 </body>
