@@ -1,0 +1,17 @@
+{
+  "name": "avatar-moves",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avatar: Moves — static move list, roster and combo trainer pages",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.10",
+    "jsdom": "26.1.0",
+    "vitest": "4.1.10"
+  }
+}
