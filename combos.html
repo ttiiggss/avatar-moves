@@ -264,8 +264,8 @@ body { font-family: var(--font-body); background: var(--bg-deep); color: var(--t
     <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="5">L1</span> Special ⤵↘</div>
     <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="7">R2</span> Special ⤴↙</div>
     <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="6">L2</span> Jump Cancel</div>
-    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="12">⬇↘</span> Cmd (6)</div>
-    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="13">⬇↙</span> Cmd (2)</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="15">➡</span> Cmd (6)</div>
+    <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="13">⬇</span> Cmd (2)</div>
     <div class="gamepad-mapping-item"><span class="gamepad-btn" data-gp="9">▶▶</span> Super</div>
   </div>
 
@@ -1137,6 +1137,7 @@ let stats = { hits: 0, misses: 0, perfects: 0, streak: 0, maxStreak: 0 };
 let completedCombos = new Set();
 let stepStartTime = 0;
 let timingRaf = null;
+let missToken = 0;
 let activeCharFilter = 'all';
 
 // ═══ CHARACTER FILTER ═══
@@ -1267,7 +1268,8 @@ function startCombo() {
 function resetCombo() {
   isActive = false;
   currentStep = 0;
-  if (timingRaf) cancelAnimationFrame(timingRaf);
+  missToken++;
+  if (timingRaf) { cancelAnimationFrame(timingRaf); timingRaf = null; }
   document.getElementById('btnStart').textContent = 'Start Combo';
   document.getElementById('timingContainer').style.display = 'none';
   renderSequence();
@@ -1332,6 +1334,9 @@ function startTimingLoop() {
 }
 
 // ═══ KEY HANDLING ═══
+// Keys the trainer consumes; browser defaults are suppressed for these
+const TRAINER_KEYS = new Set(['a', 's', 'd', 'e', 'f', 'q', 'r', 't', 'w', ' ']);
+
 function handleKey(e) {
   if (!isActive) {
     if (e.key === 'Enter') { startCombo(); }
@@ -1341,6 +1346,8 @@ function handleKey(e) {
   const combo = combos[currentComboIdx];
   const expected = combo.steps[currentStep];
   const key = e.key.toLowerCase();
+
+  if (TRAINER_KEYS.has(key)) e.preventDefault();
 
   if (key === 'escape') { resetCombo(); return; }
 
@@ -1400,6 +1407,11 @@ function handleHit(quality) {
 }
 
 function handleMiss() {
+  if (timingRaf) { cancelAnimationFrame(timingRaf); timingRaf = null; }
+  missToken++;
+  const token = missToken;
+  const comboIdx = currentComboIdx;
+  const step = currentStep;
   stats.misses++;
   stats.streak = 0;
 
@@ -1414,6 +1426,7 @@ function handleMiss() {
 
   // Brief pause then reset to current step
   setTimeout(() => {
+    if (!isActive || token !== missToken || comboIdx !== currentComboIdx || step !== currentStep) return;
     if (node) {
       node.classList.remove('miss');
       node.classList.add('current');
@@ -1433,7 +1446,8 @@ function updateStepDisplay() {
 // ═══ COMPLETE COMBO ═══
 function completeCombo() {
   isActive = false;
-  if (timingRaf) cancelAnimationFrame(timingRaf);
+  missToken++;
+  if (timingRaf) { cancelAnimationFrame(timingRaf); timingRaf = null; }
   document.getElementById('timingContainer').style.display = 'none';
 
   showFeedback('COMPLETE!', 'complete');
@@ -1495,8 +1509,8 @@ const GP = {
     7: 'e',   // R2 (Special 214)
     6: 'w',   // L2 (Jump Cancel)
     9: ' ',   // Start (Super)
-    12: 'r',  // D-pad Down → Command (6/fwd)
-    13: 't',  // D-pad Right → Command (2/crouch)
+    13: 't',  // D-pad Down → Command (2/crouch)
+    15: 'r',  // D-pad Right → Command (6/fwd)
   },
   // Track analog stick for direction + button combos
   stickThreshold: 0.5,
