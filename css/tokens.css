@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════════════════
+   AVATAR LEGENDS — SHARED DESIGN TOKENS
+   Palette, typography and motion shared by every page.
+   Pages may override individual tokens in their own
+   :root block (e.g. --max-width, element --*-dark tints).
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* Base palette */
+  --bg-deep: #0a0a0f;
+  --bg-dark: #12121a;
+  --bg-card: #1a1a24;
+  --bg-elevated: #22222e;
+  --border: #2e2e3a;
+  --border-light: #3a3a48;
+  --text-primary: #e8e6e3;
+  --text-secondary: #a0a0a8;
+  --text-muted: #6a6a74;
+  --text-dim: #4a4a54;
+
+  /* Element colors */
+  --air: #7fc4e8;
+  --air-glow: rgba(127, 196, 232, 0.15);
+  --water: #4a90d9;
+  --water-glow: rgba(74, 144, 217, 0.15);
+  --earth: #c4a04e;
+  --earth-glow: rgba(196, 160, 78, 0.15);
+  --fire: #e85d3a;
+  --fire-glow: rgba(232, 93, 58, 0.15);
+  --spirit: #9b6dd4;
+  --spirit-glow: rgba(155, 109, 212, 0.15);
+  --nonbender: #8a9ba8;
+  --nonbender-glow: rgba(138, 155, 168, 0.15);
+
+  /* Accent */
+  --gold: #d4a843;
+  --gold-bright: #f0c548;
+
+  /* Feedback */
+  --green: #4ade80;
+  --red: #ef4444;
+
+  /* Fonts */
+  --font-display: 'Cinzel', serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Layout */
+  --max-width: 1200px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

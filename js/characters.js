@@ -1,8 +1,13 @@
-<script>
-// Character data with full move lists
+// ═══════════════════════════════════════════════════════
+// AVATAR LEGENDS — SHARED CHARACTER DATA
+// Single source of truth for the roster, consumed by
+// index.html and roster.html.
+// ═══════════════════════════════════════════════════════
+
 const characters = [
   {
     id: 'aang', num: '01', name: 'Aang', element: 'air', elementLabel: 'Airbending',
+    portrait: 'img/chars/Aang.png',
     archetype: 'Rushdown', difficulty: 4, series: 'The Last Airbender',
     voice: 'Da-Ni Lin', supports: ['Gyatso','Appa','Momo'],
     mechanic: 'Avatar State — Activates automatically after losing 1 Round and gaining 7 Energy. Once per match. All H attacks and specials empowered.',
@@ -64,6 +69,7 @@ const characters = [
   },
   {
     id: 'korra', num: '02', name: 'Korra', element: 'water', elementLabel: 'Multi-Element Avatar',
+    portrait: 'img/chars/Korra.png',
     archetype: 'Rushdown', difficulty: 3, series: 'The Legend of Korra',
     voice: '—', supports: ['Naga','Tonraq','Raava'],
     mechanic: 'Avatar Cycle — Hit with bending in Water→Earth→Fire→Air order to empower next special. Completing cycle regains 25% Flow. Avatar State available via Super or auto at <25% HP.',
@@ -126,6 +132,7 @@ const characters = [
   },
   {
     id: 'zuko', num: '03', name: 'Zuko', element: 'fire', elementLabel: 'Firebending',
+    portrait: 'img/chars/Zuko.png',
     archetype: 'All-rounder', difficulty: 3, series: 'The Last Airbender',
     voice: 'Vincent Tong', supports: ['Mai','Ran & Shaw','June'],
     mechanic: 'Redemption Gauge — Earn permanent levels through combat (Unbalanced: +8, Honor Pivot: +2, Blue Spirit: +2). Each level = 10 points. Reduces Flow costs for Redemption Chains + unlocks Critical Hits. Entering Unbalanced permanently grants +1 Level. Progress persists across rounds.',
@@ -193,6 +200,7 @@ const characters = [
   },
   {
     id: 'katara', num: '04', name: 'Katara', element: 'water', elementLabel: 'Waterbending',
+    portrait: 'img/chars/Katara.png',
     archetype: 'Zoner', difficulty: 3, series: 'The Last Airbender',
     voice: '—', supports: ['Kanna','Master Pakku','Hakoda'],
     mechanic: 'Water Whip Stance — Locks her in place for normal movement, but Flow Movement (Frostpath) lets her skate forward/backward while empowering her whip attacks. Cannot Guard in stance — move only via Flow.',
@@ -245,6 +253,7 @@ const characters = [
   },
   {
     id: 'toph', num: '05', name: 'Toph Beifong', element: 'earth', elementLabel: 'Earthbending',
+    portrait: 'img/chars/Toph.png',
     archetype: 'Brawler', difficulty: 3, series: 'The Last Airbender',
     voice: 'Vivian Vencer', supports: ['Badgermole','The Boulder','The Hippo'],
     mechanic: 'Seismic Sense & Armor — Many moves have armor properties that shrug off hits. Guaranteed 2 Chakra on Critical Throw enables huge damage. Anti-air throw has 3f startup — the scariest anti-air in the game.',
@@ -286,6 +295,7 @@ const characters = [
   },
   {
     id: 'sokka', num: '06', name: 'Sokka', element: 'nonbender', elementLabel: 'Non-Bender (Weapons)',
+    portrait: 'img/chars/Sokka.png',
     archetype: 'Setplay', difficulty: 4, series: 'The Last Airbender',
     voice: '—', supports: ['Suki','Master Piandao','Princess Yue'],
     mechanic: 'Non-Bender — All normals Flow Cancelable. Command Normals CANNOT be Flow Canceled but CAN be Jump Canceled. Only chains L→M (not into H). Knowledge-check character with devastating gimmicks.',
@@ -340,6 +350,7 @@ const characters = [
   },
   {
     id: 'azula', num: '07', name: 'Azula', element: 'fire', elementLabel: 'Blue Fire & Lightning',
+    portrait: 'img/chars/Azula.png',
     archetype: 'Midrange', difficulty: 2, series: 'The Last Airbender',
     voice: 'Suzie Yeung', supports: ['Lo & Li','Joo Dee','Ursa'],
     mechanic: 'Focused / Firelord Madness — Two stances governed by Support choice. Lo & Li: starts Focused, switches to Firelord after losing a round. Joo Dee: locked Focused. Ursa: locked Firelord (easiest character in game).',
@@ -384,6 +395,7 @@ const characters = [
   },
   {
     id: 'zaheer', num: '08', name: 'Zaheer', element: 'air', elementLabel: 'Airbending',
+    portrait: 'img/chars/Zaheer.png',
     archetype: 'All-rounder', difficulty: 2, series: 'The Legend of Korra',
     voice: '—', supports: ['Ming Hua','P\'Li','Ghazan'],
     mechanic: 'Flight + Red Lotus Tag Assists — Only character with on-screen tag assists. Summoning causes cooldown; if member is hit, cooldown doubles. Also has unique Flight ability via airbending.',
@@ -426,6 +438,7 @@ const characters = [
   },
   {
     id: 'ozai', num: '09', name: 'Fire Lord Ozai', element: 'fire', elementLabel: 'Firebending',
+    portrait: 'img/chars/Ozai.png',
     archetype: 'Midrange', difficulty: 5, series: 'The Last Airbender',
     voice: 'James Sie', supports: ['Fire Lord Sozin','Imperial Firebender','Admiral Zhao'],
     mechanic: 'Unique Flow System — Breaks movement rules. Assist choices can LOCK/UNLOCK entire moves. "Big body" archetype. No Critical Hits except throwing Zuko (drains half his Flow, gives him +4 Redemption). Flow regenerates 3x faster at 7 Energy.',
@@ -459,6 +472,7 @@ const characters = [
   },
   {
     id: 'kyoshi', num: '10', name: 'Kyoshi', element: 'earth', elementLabel: 'Multi-Element Avatar',
+    portrait: 'img/chars/Kyoshi.png',
     archetype: 'Brawler', difficulty: 3, series: 'Avatar Lore (Kyoshi Novels)',
     voice: '—', supports: ['Rangi','Kelsang','Yun'],
     mechanic: 'Big Body with Full Flow System — Unusual for archetype: has sprints, floats, air dash, diagonal dash. Flow regenerates 3x faster at 7 Energy. Wong\'s Finale (2H) cancelable from frame 6.',
@@ -494,6 +508,7 @@ const characters = [
   },
   {
     id: 'asa', num: '11', name: 'Avatar State Aang', element: 'spirit', elementLabel: 'All Elements (Avatar State)',
+    portrait: 'img/chars/Aang.png',
     archetype: 'Zoner', difficulty: 5, series: 'The Last Airbender',
     voice: 'Da-Ni Lin', supports: ['Katara','Roku','Guru Pathik'],
     mechanic: 'If Aang is Ryu, Avatar State Aang is Evil Ryu. Retains mobility focus but needs deliberation. Zoner archetype — controls entire battle space with attacks at unique angles.',
@@ -519,6 +534,7 @@ const characters = [
   },
   {
     id: 'ask', num: '12', name: 'Nightmare Korra', element: 'spirit', elementLabel: 'All Elements (Dark Spirit)',
+    portrait: 'img/chars/Korra.png',
     archetype: 'Rushdown', difficulty: 4, series: 'The Legend of Korra',
     voice: '—', supports: ['Vaatu','Dark Avatar Unalaq','Dark Spirit'],
     mechanic: '236X specials cancellable into Flow movement on hit, block, or during recovery frames (unique). Dashes have invulnerability periods. Can phase through opponents.',
@@ -538,183 +554,3 @@ const characters = [
     ],
   },
 ];
-
-// Element icons (emoji)
-const elementIcons = {
-  air: '🌀', water: '🌊', earth: '⛰️', fire: '🔥', spirit: '✨', nonbender: '⚔️'
-};
-
-// ── Render roster grid ──
-function renderRoster() {
-  const grid = document.getElementById('rosterGrid');
-  grid.innerHTML = characters.map(c => `
-    <div class="character-card" data-element="${c.element}" onclick="selectCharacter('${c.id}')">
-      <div class="character-number">${c.num}</div>
-      <div class="character-emblem" data-element="${c.element}">${elementIcons[c.element]}</div>
-      <div class="character-name">${c.name}</div>
-      <div class="character-element-label">${c.elementLabel}</div>
-      <div class="character-archetype">${c.archetype}</div>
-      <div class="character-difficulty">
-        Complexity <span class="stars">${'★'.repeat(c.difficulty)}${'☆'.repeat(5-c.difficulty)}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── Render character detail ──
-function selectCharacter(id) {
-  const c = characters.find(ch => ch.id === id);
-  if (!c) return;
-
-  // Update active card
-  document.querySelectorAll('.character-card').forEach(card => card.classList.remove('active'));
-  document.querySelector(`.character-card[onclick="selectCharacter('${id}')"]`)?.classList.add('active');
-
-  const detail = document.getElementById('characterDetail');
-
-  // Build move tables
-  let movesHTML = '';
-  let isFirst = true;
-  for (const [category, moves] of Object.entries(c.moves)) {
-    movesHTML += `
-      <div class="move-list">
-        <div class="move-list-title">${category}</div>
-        <table class="move-table">
-          <thead>
-            <tr>
-              <th style="width: 25%">Move</th>
-              <th style="width: 20%">Input</th>
-              <th style="width: 20%">Properties</th>
-              <th style="width: 35%">Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${moves.map(m => {
-              const props = (m[2] || '').split(/[,;]/).map(p => {
-                let cls = 'default';
-                const t = p.trim().toLowerCase();
-                if (t.includes('overhead')) cls = 'overhead';
-                else if (t.includes('low')) cls = 'low';
-                else if (t.includes('invuln')) cls = 'invuln';
-                else if (t.includes('energy') || t.includes('ex')) cls = 'ex';
-                else if (t.includes('super') || t.includes('7 energy') || t.includes('4 energy')) cls = 'super';
-                return `<span class="prop-badge ${cls}">${p.trim()}</span>`;
-              }).join('');
-              return `
-                <tr>
-                  <td class="move-name">${m[0]}</td>
-                  <td class="move-input">${m[1]}</td>
-                  <td><div class="move-props">${props || '<span class="prop-badge default">—</span>'}</div></td>
-                  <td class="move-desc">${m[3] || ''}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  detail.innerHTML = `
-    <div class="detail-header" data-element="${c.element}">
-      <div class="detail-header-content">
-        <div class="detail-emblem" data-element="${c.element}">${elementIcons[c.element]}</div>
-        <div class="detail-info">
-          <div class="detail-name">${c.name}</div>
-          <div class="detail-meta">
-            <div class="detail-meta-item">
-              <span class="detail-meta-label">Series:</span> ${c.series}
-            </div>
-            ${c.voice && c.voice !== '—' ? `<div class="detail-meta-item"><span class="detail-meta-label">Voice:</span> ${c.voice}</div>` : ''}
-            <div class="detail-meta-item">
-              <span class="detail-meta-label">Element:</span> ${c.elementLabel}
-            </div>
-            <div class="detail-meta-item">
-              <span class="detail-meta-label">Supports:</span> ${c.supports.join(', ')}
-            </div>
-          </div>
-          <div class="detail-tags">
-            <span class="detail-tag">${c.archetype}</span>
-            <span class="detail-tag">Complexity ${'★'.repeat(c.difficulty)}${'☆'.repeat(5-c.difficulty)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="detail-body">
-      <div class="detail-tabs">
-        <button class="detail-tab active" onclick="switchTab(event, 'moves-${c.id}')">Moves & Frame Data</button>
-        <button class="detail-tab" onclick="switchTab(event, 'supports-${c.id}')">Supports</button>
-        <button class="detail-tab" onclick="switchTab(event, 'info-${c.id}')">Playstyle & Mechanic</button>
-      </div>
-
-      <div id="moves-${c.id}" class="tab-content active">
-        ${movesHTML}
-      </div>
-
-      <div id="supports-${c.id}" class="tab-content">
-        <div class="support-grid">
-          ${c.supportDetails.map(s => `
-            <div class="support-card">
-              <div class="support-name">${s.name}</div>
-              <div class="support-type">${s.type}</div>
-              <div class="support-desc">${s.desc}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div id="info-${c.id}" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <div class="move-list-title">Character Mechanic</div>
-          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">${c.mechanic}</p>
-        </div>
-        <div>
-          <div class="move-list-title">Playstyle</div>
-          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">${c.playstyle}</p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  detail.classList.add('active', 'fade-in');
-  detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// ── Tab switching ──
-function switchTab(evt, tabId) {
-  const tabs = evt.target.parentElement.querySelectorAll('.detail-tab');
-  tabs.forEach(t => t.classList.remove('active'));
-  evt.target.classList.add('active');
-
-  const detail = evt.target.closest('.character-detail');
-  detail.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-}
-
-// ── Navigation ──
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-}
-
-// ── Nav active state on scroll ──
-const navLinks = document.querySelectorAll('.nav-link');
-const sections = ['overview', 'mechanics', 'roster', 'framedata', 'editions'];
-
-window.addEventListener('scroll', () => {
-  let current = '';
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && el.getBoundingClientRect().top <= 100) current = id;
-  });
-  navLinks.forEach(link => {
-    link.classList.toggle('active', link.textContent.toLowerCase() === current ||
-      (current === 'roster' && link.textContent.toLowerCase() === 'roster'));
-  });
-});
-
-// ── Initialize ──
-renderRoster();
-
-// ── Auto-select first character ──
-setTimeout(() => selectCharacter('aang'), 500);
-</script>
